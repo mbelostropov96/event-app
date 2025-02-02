@@ -7,6 +7,10 @@ use Illuminate\Routing\Router;
 /** @var Router $router */
 $router = app('router');
 
+$router->get('/', function () {
+    return view('example');
+});
+
 $router->get('/events', [EventUserController::class, 'indexEvents'])->name('events.index');
 $router->get('/events/{id}', [EventUserController::class, 'showEvent'])->name('events.show')
     ->where('id', '[0-9]+');

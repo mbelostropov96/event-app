@@ -10,6 +10,7 @@ use App\Services\EventRegistrationService;
 use App\Services\EventReviewService;
 use App\Services\EventService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 
 class EventUserController extends Controller
 {
@@ -37,7 +38,7 @@ class EventUserController extends Controller
     {
         $events = $this->eventService->getAll();
 
-        return view('', compact('events'));
+        return view('events.index', compact('events'));
     }
 
     /**
@@ -104,5 +105,25 @@ class EventUserController extends Controller
         $result = $this->eventReviewService->create($eventReviewDto);
 
         return view('', compact('result'));
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getEvents(): JsonResponse
+    {
+        $events = $this->eventService->getAll()->map(function ($event) {
+            return [
+                'id' => $event->id,
+                'title' => $event->title,
+                'description' => $event->description,
+                'location' => $event->location,
+                'startDate' => $event->start_date->format('Y-m-d'),
+                'startTime' => $event->start_time->format('H:i'),
+                'price' => $event->price,
+            ];
+        })->values();
+
+        return response()->json($events);
     }
 }
