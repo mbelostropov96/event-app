@@ -20,34 +20,9 @@ cd event-app
 cp .env.example .env
 ```
 
-3. Запустите контейнеры:
+3. Запустите скрипт установки и запуска:
 ```bash
-docker-compose up -d
-```
-
-4. Установите зависимости PHP:
-```bash
-docker-compose exec app composer install
-```
-
-5. Сгенерируйте ключ приложения:
-```bash
-docker-compose exec app php artisan key:generate
-```
-
-6. Установите зависимости Node.js:
-```bash
-docker-compose exec app npm install
-```
-
-7. Соберите фронтенд:
-```bash
-docker-compose exec app npm run build
-```
-
-8. Примените миграции и заполните базу данных:
-```bash
-docker-compose exec app php artisan migrate:fresh --seed
+./start.sh
 ```
 
 После этого приложение будет доступно по адресу: http://localhost:8000
