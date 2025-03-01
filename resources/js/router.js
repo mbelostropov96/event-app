@@ -1,8 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeComponent from './components/HomeComponent.vue';
 import EventListComponent from './components/events/EventListComponent.vue';
-import EventDetailComponent from './components/events/EventDetailComponent.vue';
+import EventDetailsComponent from './components/events/EventDetailsComponent.vue';
 import MyRegistrationsComponent from './components/user/MyRegistrationsComponent.vue';
+import CalendarComponent from './components/calendar/CalendarComponent.vue';
+import EventTypesComponent from './components/events/EventTypesComponent.vue';
+import ReviewsComponent from './components/reviews/ReviewsComponent.vue';
+import ContactsComponent from './components/ContactsComponent.vue';
+import AboutComponent from './components/AboutComponent.vue';
+import NotFoundComponent from './components/NotFoundComponent.vue';
 
 const routes = [
     {
@@ -17,8 +23,8 @@ const routes = [
     },
     {
         path: '/events/:id',
-        name: 'event-detail',
-        component: EventDetailComponent,
+        name: 'event-details',
+        component: EventDetailsComponent,
         props: true
     },
     {
@@ -26,6 +32,36 @@ const routes = [
         name: 'my-registrations',
         component: MyRegistrationsComponent,
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/calendar',
+        name: 'calendar',
+        component: CalendarComponent
+    },
+    {
+        path: '/event-types',
+        name: 'event-types',
+        component: EventTypesComponent
+    },
+    {
+        path: '/reviews',
+        name: 'reviews',
+        component: ReviewsComponent
+    },
+    {
+        path: '/contacts',
+        name: 'contacts',
+        component: ContactsComponent
+    },
+    {
+        path: '/about',
+        name: 'about',
+        component: AboutComponent
+    },
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'not-found',
+        component: NotFoundComponent
     }
 ];
 
@@ -35,8 +71,9 @@ const router = createRouter({
     scrollBehavior(to, from, savedPosition) {
         if (savedPosition) {
             return savedPosition;
+        } else {
+            return { top: 0 };
         }
-        return { top: 0 };
     }
 });
 

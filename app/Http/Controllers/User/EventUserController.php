@@ -11,6 +11,8 @@ use App\Services\EventReviewService;
 use App\Services\EventService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use App\Models\Event;
 
 class EventUserController extends Controller
 {
@@ -22,13 +24,30 @@ class EventUserController extends Controller
 
     /**
      * @param int $id
-     * @return View
+     * @return JsonResponse
      */
-    public function showEvent(int $id): View
+    public function showEvent(int $id): JsonResponse
     {
         $event = $this->eventService->findOrFail($id);
 
-        return view('', compact('event'));
+        return response()->json([
+            'id' => $event->id,
+            'title' => $event->title,
+            'description' => $event->description,
+            'start_date' => $event->start_date,
+            'start_time' => $event->start_time,
+            'location' => $event->location,
+            'price' => $event->price,
+            'type' => $event->type,
+            'image' => $event->image,
+            'capacity' => $event->capacity,
+            'registered_count' => $event->registrations_count,
+            'registration_available' => $event->isRegistrationAvailable(),
+            'organizer' => $event->organizer ? [
+                'id' => $event->organizer->id,
+                'name' => $event->organizer->name
+            ] : null
+        ]);
     }
 
     /**
@@ -67,27 +86,40 @@ class EventUserController extends Controller
     }
 
     /**
-     * @return View
+     * @param int $id
+     * @return JsonResponse
      */
-    public function registerForEvent(): View
+    public function registerForEvent(int $id): JsonResponse
     {
-        $eventId = request()->input('eventId');
-
-        $result = $this->eventRegistrationService->register($eventId);
-
-        return view('', compact('result'));
+        try {
+            $result = $this->eventRegistrationService->register($id);
+            return response()->json([
+                'message' => 'Successfully registered for event',
+                'registration' => $result
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 
     /**
-     * @return View
+     * @param int $id
+     * @return JsonResponse
      */
-    public function unregisterForEvent(): View
+    public function unregisterForEvent(int $id): JsonResponse
     {
-        $eventId = request()->input('eventId');
-
-        $result = $this->eventRegistrationService->unregister($eventId);
-
-        return view('', compact('result'));
+        try {
+            $result = $this->eventRegistrationService->unregister($id);
+            return response()->json([
+                'message' => 'Successfully unregistered from event'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 
     /**
@@ -108,21 +140,47 @@ class EventUserController extends Controller
     }
 
     /**
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function getEvents(): JsonResponse
+    public function getEvents(Request $request): JsonResponse
     {
-        $events = $this->eventService->getAll()->map(function ($event) {
-            return [
-                'id' => $event->id,
-                'title' => $event->title,
-                'description' => $event->description,
-                'location' => $event->location,
-                'startDate' => $event->start_date->format('Y-m-d'),
-                'startTime' => $event->start_time->format('H:i'),
-                'price' => $event->price,
-            ];
-        })->values();
+        $query = Event::query();
+
+        // Filter by date range
+        if ($request->has('from_date')) {
+            $query->where('start_date', '>=', $request->from_date);
+        }
+        if ($request->has('to_date')) {
+            $query->where('start_date', '<=', $request->to_date);
+        }
+
+        // Filter by type
+        if ($request->has('type')) {
+            $query->where('type', $request->type);
+        }
+
+        // Filter upcoming events
+        if ($request->boolean('upcoming')) {
+            $query->where('start_date', '>=', now()->startOfDay())
+                  ->orderBy('start_date', 'asc');
+            
+            // For upcoming events on home page, we only need 5
+            if ($request->has('limit')) {
+                $query->limit($request->integer('limit'));
+                $events = $query->get();
+                return response()->json($events);
+            }
+        }
+
+        // Sorting
+        $sortBy = $request->input('sort_by', 'start_date');
+        $sortDir = $request->input('sort_dir', 'asc');
+        $query->orderBy($sortBy, $sortDir);
+
+        // Pagination
+        $perPage = $request->input('per_page', 12);
+        $events = $query->paginate($perPage);
 
         return response()->json($events);
     }

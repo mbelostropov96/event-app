@@ -8,6 +8,15 @@ class EventSorter extends AbstractSorter
 {
     public const ID = 'id';
 
+    protected array $availableFields = [
+        'title',
+        'location',
+        'start_date',
+        'start_time',
+        'price',
+        'type'
+    ];
+
     protected function getCallbacks(): array
     {
         return [
@@ -18,5 +27,10 @@ class EventSorter extends AbstractSorter
     public function id(Builder $builder, string $value): void
     {
         $builder->orderBy('id', $value);
+    }
+
+    protected function sort(Builder $builder, string $field, string $direction): void
+    {
+        $builder->orderBy($field, $direction);
     }
 }

@@ -6,12 +6,23 @@ use App\DTO\EventDTO;
 use App\Http\Builder\Filters\EventFilter;
 use App\Http\Builder\Sorters\EventSorter;
 use App\Models\Event;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 class EventService
 {
+    /**
+     * Get query builder for events
+     *
+     * @return Builder
+     */
+    public function query(): Builder
+    {
+        return Event::query();
+    }
+
     /**
      * @param int $id
      * @return Event|null
