@@ -160,6 +160,39 @@ class EventUserController extends Controller
             $query->where('type', $request->type);
         }
 
+        // Filter by price
+        if ($request->has('price_min')) {
+            $query->where('price', '>=', $request->price_min);
+        }
+        if ($request->has('price_max')) {
+            $query->where('price', '<=', $request->price_max);
+        }
+        
+        // Handle price_range parameter if it exists
+        if ($request->has('price_range') && !$request->has('price_min') && !$request->has('price_max')) {
+            if ($request->price_range === 'free') {
+                $query->where(function($q) {
+                    $q->where('price', 0)->orWhereNull('price');
+                });
+            } else if ($request->price_range === '4000+') {
+                $query->where('price', '>=', 4000);
+            } else {
+                $range = explode('-', $request->price_range);
+                if (count($range) === 2) {
+                    $min = (int)$range[0];
+                    $max = (int)$range[1];
+                    $query->whereBetween('price', [$min, $max]);
+                }
+            }
+        }
+        
+        // Handle free events
+        if ($request->has('price_max') && $request->price_max == 0) {
+            $query->where(function($q) {
+                $q->where('price', 0)->orWhereNull('price');
+            });
+        }
+
         // Filter upcoming events
         if ($request->boolean('upcoming')) {
             $query->where('start_date', '>=', now()->startOfDay())
@@ -174,7 +207,7 @@ class EventUserController extends Controller
         }
 
         // Sorting
-        $sortBy = $request->input('sort_by', 'start_date');
+        $sortBy = $request->input('sort', 'start_date');
         $sortDir = $request->input('sort_dir', 'asc');
         $query->orderBy($sortBy, $sortDir);
 

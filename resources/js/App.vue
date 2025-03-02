@@ -75,7 +75,7 @@
         </v-list-item>
 
         <v-divider class="my-2"></v-divider>
-
+        -->
         <v-list-item
           prepend-icon="mdi-phone"
           :to="{ name: 'contacts' }"
@@ -89,7 +89,6 @@
         >
           <v-list-item-title>{{ t('navigation.about') }}</v-list-item-title>
         </v-list-item>
-        -->
       </v-list>
     </v-navigation-drawer>
 

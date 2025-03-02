@@ -26,7 +26,7 @@
             >
               <div class="fill-height d-flex align-end">
                 <v-chip
-                  color="primary"
+                  :color="getEventTypeColor(type.id)"
                   class="ma-2"
                 >
                   {{ type.eventCount }} {{ t('eventTypes.events') }}
@@ -45,29 +45,70 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import axios from 'axios';
+import { getEventTypeColor, eventTypeImages } from './eventData';
 
 const { t } = useI18n();
 
-// Sample event types data - replace with actual API call
-const eventTypes = ref([
-  {
-    id: 1,
-    name: 'Conferences',
-    description: 'Professional gatherings and conferences across various industries',
-    eventCount: 15,
-    image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800'
-  },
-  {
-    id: 2,
-    name: 'Concerts',
-    description: 'Live music performances and concerts',
-    eventCount: 8,
-    image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=800'
-  },
-  // Add more event types as needed
-]);
+// Данные о типах событий
+const eventTypes = ref([]);
+const loading = ref(true);
+
+// Загрузка типов событий с API
+const loadEventTypes = async () => {
+  loading.value = true;
+  try {
+    // Здесь должен быть запрос к API для получения типов событий
+    // Пока используем моковые данные
+    eventTypes.value = [
+      {
+        id: 'cultural',
+        name: t('categories.cultural'),
+        description: t('categories.culturalDesc'),
+        eventCount: 15,
+        image: eventTypeImages.cultural[0]
+      },
+      {
+        id: 'sports',
+        name: t('categories.sports'),
+        description: t('categories.sportsDesc'),
+        eventCount: 8,
+        image: eventTypeImages.sports[0]
+      },
+      {
+        id: 'educational',
+        name: t('categories.educational'),
+        description: t('categories.educationalDesc'),
+        eventCount: 12,
+        image: eventTypeImages.educational[0]
+      },
+      {
+        id: 'entertainment',
+        name: t('categories.entertainment'),
+        description: t('categories.entertainmentDesc'),
+        eventCount: 20,
+        image: eventTypeImages.entertainment[0]
+      },
+      {
+        id: 'other',
+        name: t('categories.other'),
+        description: t('categories.otherDesc'),
+        eventCount: 5,
+        image: eventTypeImages.other[0]
+      }
+    ];
+  } catch (error) {
+    console.error('Error loading event types:', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadEventTypes();
+});
 </script>
 
 <style scoped>

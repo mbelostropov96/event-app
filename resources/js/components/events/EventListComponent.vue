@@ -95,7 +95,7 @@
     </v-card>
 
     <!-- Events List -->
-    <v-row>
+    <v-row v-if="!loading">
       <v-col cols="12">
         <v-card class="pa-4">
           <v-row v-if="events.length">
@@ -140,45 +140,60 @@
                       ></v-progress-circular>
                     </div>
                   </template>
+                  
+                  <!-- Добавляем чип с типом события поверх изображения -->
+                  <div class="d-flex justify-end pa-2">
+                    <v-chip
+                      :color="getEventTypeColor(event.type)"
+                      size="small"
+                      label
+                      class="text-caption event-type-chip"
+                      variant="elevated"
+                      elevation="3"
+                    >
+                      <v-icon start :icon="t(`categories.${event.type}Icon`)" size="small"></v-icon>
+                      {{ t(`categories.${event.type}`) }}
+                    </v-chip>
+                  </div>
+                  
+                  <!-- Добавляем цену поверх изображения внизу -->
+                  <div class="d-flex justify-start align-end fill-height">
+                    <v-chip
+                      color="primary"
+                      size="small"
+                      class="ma-2 font-weight-bold price-chip"
+                      variant="elevated"
+                      elevation="3"
+                    >
+                      {{ event.price ? `${event.price} ₽` : t('events.free') }}
+                    </v-chip>
+                  </div>
                 </v-img>
 
-                <v-card-title class="text-truncate">
-                  {{ event.title }}
-                </v-card-title>
+                <v-card-item>
+                  <v-card-title class="text-truncate pa-0 text-subtitle-1 font-weight-bold">
+                    {{ event.title }}
+                  </v-card-title>
+                  
+                  <v-card-subtitle class="pa-0 pt-2 pb-1">
+                    <div class="d-flex align-center">
+                      <v-icon size="small" icon="mdi-calendar" class="mr-1"></v-icon>
+                      <span class="text-body-2">{{ formatDate(event.start_date) }}</span>
+                      <v-divider vertical class="mx-2"></v-divider>
+                      <v-icon size="small" icon="mdi-clock" class="mr-1"></v-icon>
+                      <span class="text-body-2">{{ formatTime(event.start_time) }}</span>
+                    </div>
+                    
+                    <div class="d-flex align-center mt-1">
+                      <v-icon size="small" icon="mdi-map-marker" class="mr-1"></v-icon>
+                      <span class="text-body-2 text-truncate">{{ formatLocation(event.location) }}</span>
+                    </div>
+                  </v-card-subtitle>
+                </v-card-item>
 
-                <v-card-subtitle>
-                  <div class="d-flex align-center mb-1">
-                    <v-icon size="small" icon="mdi-map-marker" class="mr-1"></v-icon>
-                    {{ event.location }}
-                  </div>
-                  <div class="d-flex align-center">
-                    <v-icon size="small" icon="mdi-calendar" class="mr-1"></v-icon>
-                    {{ formatDate(event.start_date) }}
-                    <v-icon size="small" icon="mdi-clock" class="mx-1"></v-icon>
-                    {{ formatTime(event.start_time) }}
-                  </div>
-                  <div class="d-flex align-center">
-                    <v-icon size="small" icon="mdi-currency-rub" class="mr-1"></v-icon>
-                    {{ event.price ? `${event.price} ₽` : t('events.free') }}
-                  </div>
-                </v-card-subtitle>
-
-                <v-card-text class="text-truncate">
-                  {{ event.description }}
+                <v-card-text class="pt-0">
+                  <p class="text-caption text-grey text-truncate-2">{{ event.description }}</p>
                 </v-card-text>
-
-                <v-card-actions class="mt-auto">
-                  <v-spacer></v-spacer>
-                  <v-chip
-                    :color="getEventTypeColor(event.type)"
-                    size="small"
-                    variant="flat"
-                    class="text-caption"
-                  >
-                    <v-icon start :icon="t(`categories.${event.type}Icon`)" size="small"></v-icon>
-                    {{ t(`categories.${event.type}`) }}
-                  </v-chip>
-                </v-card-actions>
               </v-card>
             </v-col>
           </v-row>
@@ -188,7 +203,7 @@
           </div>
 
           <!-- Pagination -->
-          <div class="d-flex justify-center mt-4">
+          <div v-if="events.length" class="d-flex justify-center mt-4">
             <v-pagination
               v-model="currentPage"
               :length="totalPages"
@@ -202,11 +217,19 @@
 
     <!-- Loading State -->
     <v-row v-if="loading">
-      <v-col cols="12" class="text-center">
-        <v-progress-circular
-          indeterminate
-          color="primary"
-        ></v-progress-circular>
+      <v-col cols="12">
+        <v-card class="pa-4">
+          <v-row>
+            <v-col v-for="n in 8" :key="n" cols="12" sm="6" md="4" lg="3" class="pa-2">
+              <v-card>
+                <v-skeleton-loader
+                  type="image, article"
+                  height="400"
+                ></v-skeleton-loader>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-card>
       </v-col>
     </v-row>
 
@@ -215,7 +238,7 @@
       <v-col cols="12">
         <v-alert
           type="info"
-          text="Нет событий, соответствующих выбранным фильтрам"
+          :text="t('events.noEventsFound')"
           variant="tonal"
           density="compact"
         ></v-alert>
@@ -229,6 +252,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
+import { getEventTypeColor, getEventImage, formatDate, formatTime } from './eventData';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -267,8 +291,8 @@ const sorting = ref({
   field: route.query.sortBy || 'start_date',
 });
 
+const loading = ref(true);
 const events = ref([]);
-const loading = ref(false);
 const totalPages = ref(1);
 const currentPage = ref(1);
 
@@ -284,54 +308,49 @@ const clearFilters = () => {
 };
 
 const loadEvents = async () => {
+  loading.value = true;
   try {
-    loading.value = true;
+    // Обновляем URL с параметрами фильтрации
+    router.push({
+      query: {
+        page: currentPage.value,
+        type: filters.value.type || undefined,
+        priceRange: filters.value.priceRange || undefined,
+        fromDate: filters.value.fromDate || undefined,
+        toDate: filters.value.toDate || undefined,
+        sortBy: sorting.value.field || undefined
+      }
+    });
 
-    // Prepare query parameters
-    const params = new URLSearchParams();
-    
-    if (filters.value.type) {
-      params.append('type', filters.value.type);
-    }
-    
+    // Подготавливаем параметры для API запроса
+    const params = {
+      page: currentPage.value,
+      type: filters.value.type,
+      price_range: filters.value.priceRange,
+      from_date: filters.value.fromDate,
+      to_date: filters.value.toDate,
+      sort: sorting.value.field,
+    };
+
+    // Преобразуем диапазон цен в min/max значения для API
     if (filters.value.priceRange) {
-      const range = filters.value.priceRange;
-      if (range === 'free') {
-        params.append('price_max', '0');
-      } else if (range === '4000+') {
-        params.append('price_min', '4000');
+      if (filters.value.priceRange === 'free') {
+        params.price_max = 0;
+        delete params.price_range;
+      } else if (filters.value.priceRange === '4000+') {
+        params.price_min = 4000;
+        delete params.price_range;
       } else {
-        const [min, max] = range.split('-').map(Number);
-        params.append('price_min', min);
-        params.append('price_max', max);
+        const [min, max] = filters.value.priceRange.split('-').map(Number);
+        params.price_min = min;
+        params.price_max = max;
+        delete params.price_range;
       }
     }
-    
-    if (filters.value.fromDate) {
-      params.append('from_date', filters.value.fromDate);
-    }
-    
-    if (filters.value.toDate) {
-      params.append('to_date', filters.value.toDate);
-    }
-    
-    params.append('sort_by', sorting.value.field);
-    params.append('page', currentPage.value);
-
-    // Update route
-    router.push({ query: { 
-      type: filters.value.type,
-      priceRange: filters.value.priceRange,
-      fromDate: filters.value.fromDate,
-      toDate: filters.value.toDate,
-      sortBy: sorting.value.field,
-      page: currentPage.value,
-    }});
 
     const response = await axios.get('/api/events', { params });
     events.value = response.data.data;
-    totalPages.value = response.data.last_page;
-    currentPage.value = response.data.current_page;
+    totalPages.value = response.data.meta.last_page || response.data.last_page;
   } catch (error) {
     console.error('Error loading events:', error);
   } finally {
@@ -362,21 +381,6 @@ onMounted(() => {
   loadEvents();
 });
 
-const formatDate = (date) => {
-  if (!date) return '';
-  return new Date(date).toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
-};
-
-const formatTime = (time) => {
-  if (!time) return '';
-  const [hours, minutes] = time.split(':');
-  return `${hours}:${minutes}`;
-};
-
 const formatPrice = (price) => {
   if (!price) return t('events.free');
   return new Intl.NumberFormat('ru-RU', {
@@ -398,64 +402,7 @@ const formatLocation = (location) => {
   return location.length > 20 ? location.substring(0, 20) + '...' : location;
 };
 
-const getEventTypeColor = (type) => {
-  const colors = {
-    cultural: 'purple',
-    sports: 'blue',
-    educational: 'green',
-    entertainment: 'orange',
-    other: 'grey'
-  };
-  return colors[type] || 'grey';
-};
-
 const defaultImage = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800&q=80';
-
-const eventTypeImages = {
-  cultural: [
-    'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=800&q=80', // Театр
-    'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=800&q=80', // Музей
-    'https://images.unsplash.com/photo-1577083552431-c0d45a5cb73b?auto=format&fit=crop&w=800&q=80', // Выставка
-    'https://images.unsplash.com/photo-1509170051686-83f8efd35a31?auto=format&fit=crop&w=800&q=80', // Опера
-    'https://images.unsplash.com/photo-1545987796-200677ee1011?auto=format&fit=crop&w=800&q=80', // Балет
-  ],
-  sports: [
-    'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=800&q=80', // Футбольное поле
-    'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80', // Футбольный матч
-    'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=800&q=80', // Теннис
-    'https://images.unsplash.com/photo-1577223625816-6599b462fce1?auto=format&fit=crop&w=800&q=80', // Футбольный стадион
-    'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80', // Бег
-  ],
-  educational: [
-    'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80', // Библиотека
-    'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=800&q=80', // Лекция
-    'https://images.unsplash.com/photo-1544531586-fde5298cdd40?auto=format&fit=crop&w=800&q=80', // Мастер-класс
-    'https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?auto=format&fit=crop&w=800&q=80', // Учебный класс
-    'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80', // Конференция
-  ],
-  entertainment: [
-    'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80', // Концерт
-    'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80', // Фестиваль
-    'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=80', // Вечеринка
-    'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&w=800&q=80', // DJ
-    'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80', // Караоке
-  ],
-  other: [
-    'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80', // Общее
-    'https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&w=800&q=80', // Встреча
-    'https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&w=800&q=80', // Networking
-    'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80', // Воркшоп
-    'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=800&q=80', // Пикник
-  ],
-};
-
-const getEventImage = (event) => {
-  if (event.image) return event.image;
-  
-  const typeImages = eventTypeImages[event.type] || eventTypeImages.other;
-  const randomIndex = Math.floor(Math.random() * typeImages.length);
-  return typeImages[randomIndex];
-};
 </script>
 
 <style scoped>
@@ -466,5 +413,26 @@ const getEventImage = (event) => {
 .text-wrap {
   white-space: normal;
   word-wrap: break-word;
+}
+
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-type-chip {
+  font-weight: bold;
+  opacity: 0.95;
+  text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.price-chip {
+  opacity: 0.95;
+  text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 </style>

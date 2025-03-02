@@ -24,13 +24,13 @@
               <v-icon icon="mdi-map-marker" class="mr-4"></v-icon>
               <div>
                 <div class="text-subtitle-1">{{ t('contacts.address') }}</div>
-                <div class="text-body-2">123 Event Street<br>San Francisco, CA 94105</div>
+                <div class="text-body-2">Адрес не указан</div>
               </div>
             </div>
           </v-card-text>
         </v-card>
       </v-col>
-
+      <!--
       <v-col cols="12" md="6">
         <v-card>
           <v-card-text>
@@ -74,6 +74,7 @@
           </v-card-text>
         </v-card>
       </v-col>
+      -->
     </v-row>
   </v-container>
 </template>

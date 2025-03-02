@@ -40,40 +40,6 @@
           </v-card-text>
         </v-card>
       </v-col>
-
-      <v-col cols="12" md="4">
-        <v-card class="mb-6">
-          <v-card-text>
-            <div class="text-h5 mb-4">{{ t('about.stats.title') }}</div>
-            <div
-              v-for="stat in stats"
-              :key="stat.label"
-              class="text-center mb-6"
-            >
-              <div class="text-h4 font-weight-bold primary--text">
-                {{ stat.value }}
-              </div>
-              <div class="text-body-1">{{ stat.label }}</div>
-            </div>
-          </v-card-text>
-        </v-card>
-
-        <v-card>
-          <v-card-text>
-            <div class="text-h5 mb-4">{{ t('about.team.title') }}</div>
-            <div class="text-body-1 mb-4">
-              {{ t('about.team.description') }}
-            </div>
-            <v-btn
-              color="primary"
-              block
-              href="mailto:careers@eventapp.com"
-            >
-              {{ t('about.team.joinUs') }}
-            </v-btn>
-          </v-card-text>
-        </v-card>
-      </v-col>
     </v-row>
   </v-container>
 </template>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-container>
+    <v-container v-if="!loading && event.id">
       <!-- Event Image -->
       <v-row>
         <v-col cols="12">
@@ -94,7 +94,7 @@
           <div class="text-h5 font-weight-bold mb-4">{{ t('events.description') }}</div>
           <div class="text-body-1 mb-6" style="white-space: pre-line">{{ event.description }}</div>
 
-          <!-- Organizer -->
+          <!-- Organizer 
           <div class="text-h5 font-weight-bold mb-4">{{ t('events.organizer') }}</div>
           <v-card variant="outlined" class="mb-6">
             <v-card-text>
@@ -109,8 +109,9 @@
               </div>
             </v-card-text>
           </v-card>
+          -->
         </v-col>
-
+  
         <!-- Action Card -->
         <v-col cols="12" md="4">
           <v-card class="sticky-top" style="top: 24px">
@@ -126,9 +127,8 @@
                 <v-icon start icon="mdi-check-circle"></v-icon>
                 {{ event.registered ? t('events.registered') : t('events.register') }}
               </v-btn>
-
+              <!--
               <v-divider class="my-4"></v-divider>
-
               <div class="d-flex justify-space-between mb-2">
                 <v-btn
                   variant="text"
@@ -145,13 +145,145 @@
                   {{ t('events.actions.share') }}
                 </v-btn>
               </div>
+              -->
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
     </v-container>
 
-    <!-- Share Dialog -->
+    <!-- Loading State -->
+    <v-container v-else-if="loading">
+      <v-row>
+        <!-- Event Image Skeleton -->
+        <v-col cols="12">
+          <v-skeleton-loader
+            type="image"
+            height="400"
+            class="rounded-lg"
+          ></v-skeleton-loader>
+        </v-col>
+      </v-row>
+
+      <!-- Event Details Skeleton -->
+      <v-row class="mt-6">
+        <v-col cols="12" md="8">
+          <!-- Title and Type -->
+          <div class="d-flex align-center mb-4">
+            <v-skeleton-loader
+              type="text"
+              width="400"
+              class="mr-4"
+            ></v-skeleton-loader>
+            <v-skeleton-loader
+              type="chip"
+              width="120"
+            ></v-skeleton-loader>
+          </div>
+
+          <!-- Event Info Card -->
+          <v-card class="mb-6" variant="flat">
+            <v-card-text>
+              <div class="d-flex flex-column gap-4">
+                <!-- Date and Time -->
+                <div class="d-flex align-center">
+                  <v-skeleton-loader
+                    type="avatar"
+                    size="28"
+                    class="mr-4"
+                  ></v-skeleton-loader>
+                  <div>
+                    <v-skeleton-loader
+                      type="text"
+                      width="200"
+                      class="mb-2"
+                    ></v-skeleton-loader>
+                    <v-skeleton-loader
+                      type="text"
+                      width="100"
+                    ></v-skeleton-loader>
+                  </div>
+                </div>
+
+                <!-- Location -->
+                <div class="d-flex align-center">
+                  <v-skeleton-loader
+                    type="avatar"
+                    size="28"
+                    class="mr-4"
+                  ></v-skeleton-loader>
+                  <div>
+                    <v-skeleton-loader
+                      type="text"
+                      width="300"
+                      class="mb-2"
+                    ></v-skeleton-loader>
+                    <v-skeleton-loader
+                      type="button"
+                      width="150"
+                    ></v-skeleton-loader>
+                  </div>
+                </div>
+
+                <!-- Price -->
+                <div class="d-flex align-center">
+                  <v-skeleton-loader
+                    type="avatar"
+                    size="28"
+                    class="mr-4"
+                  ></v-skeleton-loader>
+                  <div>
+                    <v-skeleton-loader
+                      type="text"
+                      width="150"
+                      class="mb-2"
+                    ></v-skeleton-loader>
+                    <v-skeleton-loader
+                      type="text"
+                      width="200"
+                    ></v-skeleton-loader>
+                  </div>
+                </div>
+              </div>
+            </v-card-text>
+          </v-card>
+
+          <!-- Description -->
+          <v-skeleton-loader
+            type="text"
+            width="200"
+            class="mb-4"
+          ></v-skeleton-loader>
+          <v-skeleton-loader
+            type="paragraph"
+            class="mb-6"
+          ></v-skeleton-loader>
+        </v-col>
+
+        <!-- Action Card -->
+        <v-col cols="12" md="4">
+          <v-card class="sticky-top" style="top: 24px">
+            <v-card-text>
+              <v-skeleton-loader
+                type="button"
+                class="mb-4"
+              ></v-skeleton-loader>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <!-- Error State -->
+    <v-container v-else>
+      <v-alert
+        type="error"
+        variant="tonal"
+        :text="t('events.detail.error')"
+      ></v-alert>
+    </v-container>
+
+    <!-- Share Dialog
     <v-dialog v-model="shareDialog" max-width="500">
       <v-card>
         <v-card-title>{{ t('events.actions.share') }}</v-card-title>
@@ -165,6 +297,7 @@
         </v-card-text>
       </v-card>
     </v-dialog>
+   -->
   </div>
 </template>
 
@@ -173,79 +306,15 @@ import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import { getEventTypeColor, getEventImage, formatDate, formatTime } from './eventData';
 
 const { t } = useI18n();
 const route = useRoute();
 
 const event = ref({});
-const loading = ref(false);
+const loading = ref(true);
 const shareDialog = ref(false);
 const shareUrl = ref('');
-
-// Import event type images and colors from EventListComponent
-const eventTypeImages = {
-  cultural: [
-    'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1526478806334-5fd488fcaabc?auto=format&fit=crop&w=800&q=80',
-  ],
-  sports: [
-    'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1526676338312-3b988d6aa25b?auto=format&fit=crop&w=800&q=80',
-  ],
-  educational: [
-    'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=800&q=80',
-  ],
-  entertainment: [
-    'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80',
-  ],
-  other: [
-    'https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=800&q=80',
-  ],
-};
-
-const getEventTypeColor = (type) => {
-  const colors = {
-    cultural: 'purple',
-    sports: 'green',
-    educational: 'blue',
-    entertainment: 'pink',
-    other: 'grey'
-  };
-  return colors[type] || 'grey';
-};
-
-const getEventImage = (event) => {
-  if (event.image) return event.image;
-  
-  const typeImages = eventTypeImages[event.type] || eventTypeImages.other;
-  const randomIndex = Math.floor(Math.random() * typeImages.length);
-  return typeImages[randomIndex];
-};
-
-const formatDate = (date) => {
-  if (!date) return '';
-  return new Date(date).toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
-};
-
-const formatTime = (time) => {
-  if (!time) return '';
-  const [hours, minutes] = time.split(':');
-  return `${hours}:${minutes}`;
-};
 
 const loadEvent = async () => {
   try {
