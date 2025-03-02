@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Vite -->
@@ -56,7 +56,7 @@
             <!-- App Bar -->
             <v-app-bar color="primary" prominent>
                 <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-                
+
                 <v-toolbar-title>{{ $t('app.name') }}</v-toolbar-title>
 
                 <v-spacer></v-spacer>
@@ -79,7 +79,7 @@
                         value="events"
                         href="/events"
                     ></v-list-item>
-                    
+
                     <v-list-item
                         prepend-icon="mdi-account-multiple"
                         :title="$t('navigation.myRegistrations')"

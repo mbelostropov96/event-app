@@ -21,6 +21,6 @@ class EventDTO extends AbstractDTO
             if (property_exists($this, $property)) {
                 $this->{$property} = $datum;
             }
-        }
+        }  
     }
 }
