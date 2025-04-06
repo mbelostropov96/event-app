@@ -71,6 +71,18 @@
               </v-col>
             </v-row>
           </v-col>
+          
+          <!-- Show Past Events Switch -->
+          <v-col cols="12">
+            <v-switch
+              v-model="filters.showPastEvents"
+              :label="t('events.filters.showPastEvents')"
+              color="primary"
+              hide-details
+              density="compact"
+              @change="loadEvents"
+            ></v-switch>
+          </v-col>
 
           <!-- Actions -->
           <v-col cols="12" class="d-flex justify-end mt-2">
@@ -111,6 +123,7 @@
               <v-card
                 :to="{ name: 'event-details', params: { id: event.id }}"
                 class="h-100"
+                :class="{ 'past-event': isPastEvent(event) }"
               >
                 <v-img
                   :src="getEventImage(event)"
@@ -147,7 +160,7 @@
                       :color="getEventTypeColor(event.type)"
                       size="small"
                       label
-                      class="text-caption event-type-chip"
+                      class="event-type-chip"
                       variant="elevated"
                       elevation="3"
                     >
@@ -166,6 +179,20 @@
                       elevation="3"
                     >
                       {{ event.price ? `${event.price} ₽` : t('events.free') }}
+                    </v-chip>
+                  </div>
+                  
+                  <!-- Метка для прошедших событий -->
+                  <div v-if="isPastEvent(event)" class="past-event-badge">
+                    <v-chip
+                      color="grey-darken-2"
+                      size="small"
+                      label
+                      class="past-event-chip"
+                      variant="elevated"
+                      elevation="3"
+                    >
+                      {{ t('events.pastEvent') }}
                     </v-chip>
                   </div>
                 </v-img>
@@ -285,6 +312,7 @@ const filters = ref({
   priceRange: route.query.priceRange || null,
   fromDate: route.query.fromDate || null,
   toDate: route.query.toDate || null,
+  showPastEvents: route.query.showPastEvents === 'true' || false,
 });
 
 const sorting = ref({
@@ -302,6 +330,7 @@ const clearFilters = () => {
     priceRange: null,
     fromDate: null,
     toDate: null,
+    showPastEvents: false,
   };
   sorting.value.field = 'start_date';
   loadEvents();
@@ -309,6 +338,7 @@ const clearFilters = () => {
 
 const loadEvents = async () => {
   loading.value = true;
+  
   try {
     // Обновляем URL с параметрами фильтрации
     router.push({
@@ -318,6 +348,7 @@ const loadEvents = async () => {
         priceRange: filters.value.priceRange || undefined,
         fromDate: filters.value.fromDate || undefined,
         toDate: filters.value.toDate || undefined,
+        showPastEvents: filters.value.showPastEvents || undefined,
         sortBy: sorting.value.field || undefined
       }
     });
@@ -330,6 +361,7 @@ const loadEvents = async () => {
       from_date: filters.value.fromDate,
       to_date: filters.value.toDate,
       sort: sorting.value.field,
+      show_past_events: filters.value.showPastEvents,
     };
 
     // Преобразуем диапазон цен в min/max значения для API
@@ -349,8 +381,26 @@ const loadEvents = async () => {
     }
 
     const response = await axios.get('/api/events', { params });
-    events.value = response.data.data;
-    totalPages.value = response.data.meta.last_page || response.data.last_page;
+    
+    // Проверяем формат ответа и извлекаем данные соответственно
+    if (response.data.data) {
+      // Формат с вложенным массивом data
+      events.value = response.data.data;
+    } else {
+      // Формат без вложенного массива data
+      events.value = response.data;
+    }
+    
+    // Проверяем, где находятся метаданные пагинации
+    if (response.data.meta && response.data.meta.last_page) {
+      totalPages.value = response.data.meta.last_page;
+    } else if (response.data.last_page) {
+      totalPages.value = response.data.last_page;
+    } else {
+      // Если метаданных нет, устанавливаем totalPages в 1
+      totalPages.value = 1;
+      console.warn('No pagination metadata found in response:', response.data);
+    }
   } catch (error) {
     console.error('Error loading events:', error);
   } finally {
@@ -366,6 +416,7 @@ watch(
     filters.value.priceRange = newQuery.priceRange || null;
     filters.value.fromDate = newQuery.fromDate || null;
     filters.value.toDate = newQuery.toDate || null;
+    filters.value.showPastEvents = newQuery.showPastEvents === 'true' || false;
     sorting.value.field = newQuery.sortBy || 'start_date';
     currentPage.value = parseInt(newQuery.page) || 1;
   },
@@ -403,6 +454,14 @@ const formatLocation = (location) => {
 };
 
 const defaultImage = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=800&q=80';
+
+const isPastEvent = (event) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const eventDate = new Date(event.start_date);
+  eventDate.setHours(0, 0, 0, 0);
+  return eventDate < today;
+};
 </script>
 
 <style scoped>
@@ -431,6 +490,24 @@ const defaultImage = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3
 }
 
 .price-chip {
+  opacity: 0.95;
+  text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.past-event {
+  opacity: 0.8;
+}
+
+.past-event-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+}
+
+.past-event-chip {
+  font-weight: bold;
   opacity: 0.95;
   text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.3);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);

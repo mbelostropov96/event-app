@@ -86,6 +86,17 @@ class EventFactory extends Factory
         $maxPrice = floor($priceRange[1] / 100) * 100;
         $price = $this->faker->randomElement(range($minPrice, $maxPrice, 100));
 
+        // Get admin user for organizer
+        $admin = \App\Models\User::where('role', 'admin')->first();
+
+        // Map event type to EventType enum
+        $eventTypeMap = [
+            'Конференция' => \App\Enums\EventType::EDUCATIONAL->value,
+            'Фестиваль' => \App\Enums\EventType::CULTURAL->value,
+            'Выставка' => \App\Enums\EventType::CULTURAL->value,
+            'Мастер-класс' => \App\Enums\EventType::EDUCATIONAL->value,
+        ];
+
         return [
             'title' => $eventInfo['title'],
             'description' => $eventInfo['description'],
@@ -93,6 +104,9 @@ class EventFactory extends Factory
             'start_date' => $startDate,
             'start_time' => $startTime,
             'price' => $price,
+            'type' => $eventTypeMap[$eventType] ?? \App\Enums\EventType::OTHER->value,
+            'capacity' => $this->faker->randomElement([50, 100, 150, 200, 300, 500]),
+            'organizer_id' => $admin->id,
         ];
     }
 

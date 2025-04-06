@@ -8,8 +8,8 @@ use App\Http\Requests\ModerateEventReviewRequest;
 use App\Http\Requests\StoreEventRequest;
 use App\Services\EventReviewService;
 use App\Services\EventService;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class EventAdminController extends Controller
 {
@@ -20,93 +20,122 @@ class EventAdminController extends Controller
 
     /**
      * @param int $id
-     * @return View
+     * @return JsonResponse
      */
-    public function showEvent(int $id): View
+    public function showEvent(int $id): JsonResponse
     {
         $event = $this->eventService->findOrFail($id);
 
-        return view('', compact('event'));
+        return response()->json($event);
     }
 
     /**
-     * @return View
-    */
-    public function indexEvents(): View
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function indexEvents(Request $request): JsonResponse
     {
+        $upcoming = $request->query('upcoming', false);
+        $limit = $request->query('limit', null);
+        
         $events = $this->eventService->getAll();
+        
+        if ($upcoming) {
+            $events = $events->filter(function($event) {
+                return $event->start_date >= date('Y-m-d');
+            });
+        }
+        
+        if ($limit) {
+            $events = $events->take($limit);
+        }
 
-        return view('', compact('events'));
+        return response()->json([
+            'data' => $events->values(),
+            'meta' => [
+                'total' => $events->count(),
+                'last_page' => 1
+            ]
+        ]);
     }
 
     /**
      * @param StoreEventRequest $request
-     * @return RedirectResponse
+     * @return JsonResponse
      */
-    public function storeEvent(StoreEventRequest $request): RedirectResponse
+    public function storeEvent(StoreEventRequest $request): JsonResponse
     {
         $data = $request->validated();
 
-        $this->eventService->create($data);
+        $eventDto = new EventDTO($data);
+        $event = $this->eventService->create($eventDto);
 
-        return redirect()->to(route(''));
+        return response()->json([
+            'message' => 'Event created successfully',
+            'event' => $event
+        ], 201);
     }
 
     /**
      * @param int $id
      * @param StoreEventRequest $request
-     * @return RedirectResponse
+     * @return JsonResponse
      */
-    public function updateEvent(int $id, StoreEventRequest $request): RedirectResponse
+    public function updateEvent(int $id, StoreEventRequest $request): JsonResponse
     {
         $data = $request->validated();
 
-        $eventDto = new EventDto(array_merge($data, [
+        $eventDto = new EventDTO(array_merge($data, [
             'id' => $id,
         ]));
 
-        $this->eventService->update($eventDto);
+        $event = $this->eventService->update($eventDto);
 
-        return redirect()->to(route(''));
+        return response()->json([
+            'message' => 'Event updated successfully',
+            'event' => $event
+        ]);
     }
 
     /**
      * @param int $id
-     * @return RedirectResponse
+     * @return JsonResponse
      */
-    public function destroyEvent(int $id): RedirectResponse
+    public function destroyEvent(int $id): JsonResponse
     {
         $this->eventService->delete($id);
 
-        return redirect()->to(route(''));
+        return response()->json([
+            'message' => 'Event deleted successfully'
+        ]);
     }
 
     /**
      * @param int $id
-     * @return View
+     * @return JsonResponse
      */
-    public function showEventReview(int $id): View
+    public function showEventReview(int $id): JsonResponse
     {
         $eventReview = $this->eventReviewService->findOrFail($id);
 
-        return view('', compact('eventReview'));
+        return response()->json($eventReview);
     }
 
     /**
-     * @return View
+     * @return JsonResponse
      */
-    public function indexEventReviews(): View
+    public function indexEventReviews(): JsonResponse
     {
         $eventReviews = $this->eventReviewService->getAll();
 
-        return view('', compact('eventReviews'));
+        return response()->json($eventReviews);
     }
 
     /**
      * @param ModerateEventReviewRequest $request
-     * @return RedirectResponse
+     * @return JsonResponse
      */
-    public function moderateEventReview(ModerateEventReviewRequest $request): RedirectResponse
+    public function moderateEventReview(ModerateEventReviewRequest $request): JsonResponse
     {
         $data = $request->validated();
 
@@ -115,6 +144,8 @@ class EventAdminController extends Controller
 
         $this->eventReviewService->moderate($eventReviewId, $status);
 
-        return redirect()->to(route(''));
+        return response()->json([
+            'message' => 'Event review moderated successfully'
+        ]);
     }
 }

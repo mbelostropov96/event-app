@@ -26,6 +26,13 @@ class EventRegistration extends Model
     public const TABLE = 'event_registrations';
 
     protected $table = self::TABLE;
+    
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
 
     protected $fillable = [
         'event_id',

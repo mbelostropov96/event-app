@@ -22,8 +22,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property EventType $type
  * @property integer $capacity
  * @property integer $registrations_count
+ * @property string $image
  *
  * @property Collection<EventRegistration> $eventRegistrations
+ * @property Collection<EventReview> $reviews
  */
 class Event extends Model
 {
@@ -44,6 +46,7 @@ class Event extends Model
         'price',
         'type',
         'capacity',
+        'image',
     ];
 
     protected $casts = [
@@ -56,6 +59,7 @@ class Event extends Model
         'price' => 'integer',
         'type' => EventType::class,
         'capacity' => 'integer',
+        'image' => 'string',
     ];
 
     /**
@@ -99,6 +103,18 @@ class Event extends Model
     {
         return $this->hasMany(
             EventRegistration::class,
+            'event_id',
+            'id'
+        );
+    }
+    
+    /**
+     * Get the reviews for the event
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(
+            EventReview::class,
             'event_id',
             'id'
         );

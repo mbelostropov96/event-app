@@ -15,61 +15,161 @@
 
     <!-- Registrations List -->
     <v-row v-else-if="registrations.length">
-      <v-col v-for="registration in registrations" :key="registration.id" cols="12" md="6">
-        <v-card>
-          <v-row no-gutters>
-            <v-col cols="4">
-              <v-img
-                :src="registration.event.image || 'https://picsum.photos/200/200'"
-                height="100%"
-                cover
-              ></v-img>
-            </v-col>
-            <v-col cols="8">
-              <v-card-item>
-                <v-card-title>{{ registration.event.title }}</v-card-title>
-                <v-card-subtitle>
-                  <v-icon icon="mdi-calendar" size="small" class="mr-1"></v-icon>
-                  {{ formatDate(registration.event.date) }}
-                  <v-icon icon="mdi-clock" size="small" class="ml-4 mr-1"></v-icon>
-                  {{ registration.event.time }}
-                </v-card-subtitle>
+      <v-col cols="12">
+        <h3 class="text-h5 mb-4">{{ t('registrations.tabs.active') }}</h3>
+      </v-col>
 
-                <v-card-text>
-                  <p class="mb-2">
-                    <v-icon icon="mdi-map-marker" size="small" class="mr-1"></v-icon>
-                    {{ registration.event.location }}
-                  </p>
-                  <v-chip
-                    :color="getStatusColor(registration.status)"
-                    size="small"
-                  >
-                    {{ t(`registrations.status.${registration.status}`) }}
-                  </v-chip>
-                </v-card-text>
+      <!-- Active Events -->
+      <template v-if="activeRegistrations.length">
+        <v-col v-for="registration in sortedActiveRegistrations" :key="registration.id" cols="12" md="6">
+          <v-card>
+            <v-row no-gutters>
+              <v-col cols="4">
+                <v-img
+                  :src="getEventImage(registration.event)"
+                  height="100%"
+                  cover
+                >
+                  <template v-slot:error>
+                    <div class="d-flex align-center justify-center fill-height bg-grey-lighten-2">
+                      <v-avatar
+                        size="64"
+                        :color="getEventTypeColor(registration.event.type)"
+                      >
+                        <v-icon
+                          size="32"
+                          :icon="getEventTypeIcon(registration.event.type)"
+                          color="white"
+                        ></v-icon>
+                      </v-avatar>
+                    </div>
+                  </template>
+                </v-img>
+              </v-col>
+              <v-col cols="8">
+                <v-card-item>
+                  <v-card-title>{{ registration.event.title }}</v-card-title>
+                  <v-card-subtitle>
+                    <v-icon icon="mdi-calendar" size="small" class="mr-1"></v-icon>
+                    {{ formatDate(registration.event.start_date) }}
+                    <v-icon icon="mdi-clock" size="small" class="ml-4 mr-1"></v-icon>
+                    {{ formatTime(registration.event.start_time) }}
+                  </v-card-subtitle>
 
-                <v-card-actions>
-                  <v-btn
-                    variant="text"
-                    :to="{ name: 'event-detail', params: { id: registration.event.id }}"
-                  >
-                    {{ t('events.actions.details') }}
-                  </v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    v-if="canCancel(registration)"
-                    color="error"
-                    variant="text"
-                    @click="cancelRegistration(registration.id)"
-                    :loading="cancelling === registration.id"
-                  >
-                    {{ t('registrations.actions.cancel') }}
-                  </v-btn>
-                </v-card-actions>
-              </v-card-item>
-            </v-col>
-          </v-row>
-        </v-card>
+                  <v-card-text>
+                    <p class="mb-2">
+                      <v-icon icon="mdi-map-marker" size="small" class="mr-1"></v-icon>
+                      {{ registration.event.location }}
+                    </p>
+                    <p class="mb-2">
+                      <v-icon icon="mdi-calendar-clock" size="small" class="mr-1"></v-icon>
+                      {{ t('registrations.registered_at') }}: {{ formatDate(registration.registered_at) }}
+                    </p>
+                  </v-card-text>
+
+                  <v-card-actions>
+                    <v-btn
+                      variant="text"
+                      :to="{ name: 'event-details', params: { id: registration.event.id }}"
+                    >
+                      {{ t('events.actions.details') }}
+                    </v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                      color="error"
+                      variant="text"
+                      @click="cancelRegistration(registration.event.id)"
+                      :loading="cancelling === registration.event.id"
+                    >
+                      {{ t('registrations.actions.cancel') }}
+                    </v-btn>
+                  </v-card-actions>
+                </v-card-item>
+              </v-col>
+            </v-row>
+          </v-card>
+        </v-col>
+      </template>
+      <v-col v-else cols="12" class="text-center py-4">
+        <v-alert type="info" variant="tonal">
+          {{ t('registrations.empty.active') }}
+        </v-alert>
+      </v-col>
+
+      <!-- Past Events -->
+      <v-col cols="12" class="mt-8">
+        <h3 class="text-h5 mb-4">{{ t('registrations.tabs.past') }}</h3>
+      </v-col>
+
+      <template v-if="pastRegistrations.length">
+        <v-col v-for="registration in sortedPastRegistrations" :key="registration.id" cols="12" md="6">
+          <v-card>
+            <v-row no-gutters>
+              <v-col cols="4">
+                <v-img
+                  :src="getEventImage(registration.event)"
+                  height="100%"
+                  cover
+                  class="opacity-75"
+                >
+                  <template v-slot:error>
+                    <div class="d-flex align-center justify-center fill-height bg-grey-lighten-2">
+                      <v-avatar
+                        size="64"
+                        :color="getEventTypeColor(registration.event.type)"
+                      >
+                        <v-icon
+                          size="32"
+                          :icon="getEventTypeIcon(registration.event.type)"
+                          color="white"
+                        ></v-icon>
+                      </v-avatar>
+                    </div>
+                  </template>
+                </v-img>
+              </v-col>
+              <v-col cols="8">
+                <v-card-item>
+                  <v-card-title class="d-flex align-center">
+                    {{ registration.event.title }}
+                    <v-chip size="small" color="grey" class="ml-2">{{ t('events.past') }}</v-chip>
+                  </v-card-title>
+                  <v-card-subtitle>
+                    <v-icon icon="mdi-calendar" size="small" class="mr-1"></v-icon>
+                    {{ formatDate(registration.event.start_date) }}
+                    <v-icon icon="mdi-clock" size="small" class="ml-4 mr-1"></v-icon>
+                    {{ formatTime(registration.event.start_time) }}
+                  </v-card-subtitle>
+
+                  <v-card-text>
+                    <p class="mb-2">
+                      <v-icon icon="mdi-map-marker" size="small" class="mr-1"></v-icon>
+                      {{ registration.event.location }}
+                    </p>
+                    <p class="mb-2">
+                      <v-icon icon="mdi-calendar-clock" size="small" class="mr-1"></v-icon>
+                      {{ t('registrations.registered_at') }}: {{ formatDate(registration.registered_at) }}
+                    </p>
+                  </v-card-text>
+
+                  <v-card-actions>
+                    <v-btn
+                      variant="text"
+                      :to="{ name: 'event-details', params: { id: registration.event.id }}"
+                    >
+                      {{ t('events.actions.details') }}
+                    </v-btn>
+                  </v-card-actions>
+                </v-card-item>
+              </v-col>
+            </v-row>
+          </v-card>
+        </v-col>
+      </template>
+      <v-col v-else cols="12" class="text-center py-4">
+        <v-alert type="info" variant="tonal">
+          {{ t('registrations.empty.past') }}
+        </v-alert>
       </v-col>
     </v-row>
 
@@ -92,8 +192,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import axios from 'axios';
+import { formatDate, formatTime, getEventTypeColor, getEventImage, getEventTypeIcon } from '../events/eventData';
 
 const { t } = useI18n();
 
@@ -102,66 +204,64 @@ const registrations = ref([]);
 const loading = ref(true);
 const cancelling = ref(null);
 
+// Computed properties
+const activeRegistrations = computed(() => {
+  return registrations.value.filter(registration => {
+    if (!registration.event.start_date) return false;
+    const eventDate = new Date(registration.event.start_date);
+    return eventDate >= new Date();
+  });
+});
+
+const pastRegistrations = computed(() => {
+  return registrations.value.filter(registration => {
+    if (!registration.event.start_date) return false;
+    const eventDate = new Date(registration.event.start_date);
+    return eventDate < new Date();
+  });
+});
+
+const sortedActiveRegistrations = computed(() => {
+  return [...activeRegistrations.value].sort((a, b) => {
+    const dateA = new Date(a.event.start_date);
+    const dateB = new Date(b.event.start_date);
+    return dateA - dateB; // Sort by ascending date (closest first)
+  });
+});
+
+const sortedPastRegistrations = computed(() => {
+  return [...pastRegistrations.value].sort((a, b) => {
+    const dateA = new Date(a.event.start_date);
+    const dateB = new Date(b.event.start_date);
+    return dateB - dateA; // Sort by descending date (most recent first)
+  });
+});
+
 // Methods
 const fetchRegistrations = async () => {
   loading.value = true;
   try {
-    // TODO: Replace with actual API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    registrations.value = [
-      {
-        id: 1,
-        event: {
-          id: 1,
-          title: 'Выставка современного искусства',
-          date: '2025-02-15',
-          time: '18:00',
-          location: 'Городской музей',
-          image: null
-        },
-        status: 'confirmed',
-        created_at: '2025-02-01'
-      }
-    ];
+    const response = await axios.get('/api/profile/registrations');
+    registrations.value = response.data;
   } catch (error) {
     console.error('Error fetching registrations:', error);
+    registrations.value = [];
   } finally {
     loading.value = false;
   }
 };
 
-const cancelRegistration = async (id) => {
-  cancelling.value = id;
+const cancelRegistration = async (eventId) => {
+  cancelling.value = eventId;
   try {
-    // TODO: Replace with actual API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    registrations.value = registrations.value.filter(reg => reg.id !== id);
+    await axios.post(`/api/events/${eventId}/unregister`);
+    // Remove the cancelled registration from the list
+    registrations.value = registrations.value.filter(reg => reg.event.id !== eventId);
   } catch (error) {
     console.error('Error cancelling registration:', error);
   } finally {
     cancelling.value = null;
   }
-};
-
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('ru-RU', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-};
-
-const getStatusColor = (status) => {
-  const colors = {
-    confirmed: 'success',
-    pending: 'warning',
-    cancelled: 'error'
-  };
-  return colors[status] || 'grey';
-};
-
-const canCancel = (registration) => {
-  return registration.status === 'confirmed' || registration.status === 'pending';
 };
 
 // Lifecycle

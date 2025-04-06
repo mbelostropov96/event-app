@@ -16,7 +16,12 @@ export default {
         reviews: 'Отзывы',
         contacts: 'Контакты',
         about: 'О нас',
-        backToHome: 'Вернуться на главную'
+        backToHome: 'Вернуться на главную',
+        admin: 'Администрирование',
+        adminDashboard: 'Панель управления',
+        adminEvents: 'Управление событиями',
+        adminReviews: 'Модерация отзывов',
+        adminUsers: 'Пользователи'
     },
     home: {
         welcome: {
@@ -90,11 +95,45 @@ export default {
     },
     reviews: {
         title: 'Отзывы и оценки',
-        viewEvent: 'Перейти к мероприятию'
+        viewEvent: 'Перейти к мероприятию',
+        delete: 'Удалить',
+        count: '{n} отзывов',
+        empty: {
+            title: 'Пока нет отзывов',
+            description: 'Будьте первым, кто оставит отзыв',
+            action: 'Написать отзыв'
+        },
+        deleteConfirm: {
+            title: 'Удаление отзыва',
+            message: 'Вы уверены, что хотите удалить этот отзыв?'
+        },
+        status: {
+            published: 'Опубликован',
+            pending: 'На модерации',
+            rejected: 'Отклонен',
+            unknown: 'Неизвестно',
+            approved: 'Опубликован'
+        },
+        actions: {
+            approve: 'Одобрить',
+            reject: 'Отклонить',
+            delete: 'Удалить',
+            cancel: 'Отмена'
+        },
+        rating: 'Рейтинг',
+        yourRating: 'Ваша оценка',
+        writeReview: 'Написать отзыв',
+        form: {
+            name: 'Ваше имя',
+            email: 'Ваш email',
+            subject: 'Тема',
+            message: 'Сообщение',
+            send: 'Отправить'
+        }
     },
     contacts: {
         title: 'Контакты',
-        getInTouch: 'Свяжитесь с нами',
+        getInTouch: 'Связаться с нами',
         phone: 'Телефон',
         email: 'Электронная почта',
         address: 'Адрес',
@@ -150,6 +189,7 @@ export default {
             dateHint: 'Выберите дату',
             apply: 'Применить фильтры',
             clear: 'Сбросить',
+            showPastEvents: 'Показать прошедшие события',
             priceRanges: {
                 free: 'Бесплатно',
             }
@@ -173,12 +213,17 @@ export default {
         free: 'Бесплатно',
         register: 'Зарегистрироваться',
         registered: 'Вы зарегистрированы',
+        already_registered: 'Вы уже зарегистрированы',
+        login_required: 'Для регистрации необходимо войти в систему',
+        registration_error: 'Произошла ошибка при регистрации на мероприятие',
+        unregister: 'Отменить регистрацию',
+        unregister_confirm: 'Вы уверены, что хотите отменить регистрацию на это мероприятие?',
+        unregistration_error: 'Произошла ошибка при отмене регистрации',
+        pastEvent: 'Прошедшее событие',
         actions: {
             addToCalendar: 'Добавить в календарь',
             share: 'Поделиться',
-            copy: 'Копировать ссылку'
-        },
-        actions: {
+            copy: 'Копировать ссылку',
             back: 'Назад к списку',
             details: 'Подробнее'
         },
@@ -188,57 +233,214 @@ export default {
         },
         detail: {
             location: 'Место проведения',
-            locationNotSpecified: 'Место не указано'
+            locationNotSpecified: 'Место не указано',
+            error: 'Не удалось загрузить информацию о мероприятии'
         },
         reviews: {
             title: 'Отзывы',
             empty: 'Пока нет отзывов. Будьте первым!',
             auth_required: 'Войдите в систему, чтобы оставить отзыв',
+            future_event: 'Отзывы можно оставлять только после посещения мероприятия',
+            cannot_review: 'Вы уже оставили отзыв на это мероприятие',
+            not_registered: 'Для возможности оставить отзыв необходимо зарегистрироваться на мероприятие',
             form: {
                 text: 'Ваш отзыв',
                 submit: 'Отправить отзыв'
             }
-        },
-        registration: {
-            title: 'Регистрация',
-            free: 'Бесплатно',
-            spots_left: 'Осталось мест: {count}',
-            button: 'Зарегистрироваться',
-            closed: 'Регистрация закрыта',
-            auth_required: 'Войдите в систему, чтобы зарегистрироваться'
-        },
-        details: {
-            capacity: 'Вместимость',
-            registered: 'Зарегистрировано',
-            people: 'человек'
-        },
-        errors: {
-            notFound: 'Событие не найдено'
-        },
-        share: {
-            title: 'Поделиться',
-            copy: 'Копировать ссылку'
-        },
-        register: 'Зарегистрироваться',
-        registered: 'Вы зарегистрированы',
-        noEvents: 'Нет событий по заданным критериям'
+        }
     },
     registrations: {
-        status: {
-            confirmed: 'Подтверждено',
-            pending: 'В обработке',
-            cancelled: 'Отменено'
+        empty: {
+            title: 'У вас пока нет регистраций',
+            description: 'Найдите интересное мероприятие и зарегистрируйтесь на него',
+            action: 'Найти мероприятия',
+            active: 'У вас нет активных регистраций',
+            past: 'У вас нет прошедших мероприятий'
         },
         actions: {
             cancel: 'Отменить регистрацию'
         },
-        empty: {
-            title: 'У вас пока нет билетов',
-            description: 'Найдите интересное мероприятие и зарегистрируйтесь на него',
-            action: 'Найти мероприятия'
+        registered_at: 'Зарегистрирован',
+        tabs: {
+            active: 'Активные',
+            past: 'Прошедшие'
         }
     },
+    common: {
+        cancel: 'Отмена',
+        save: 'Сохранить',
+        delete: 'Удалить',
+        edit: 'Редактировать'
+    },
+    auth: {
+        login: 'Вход',
+        register: 'Регистрация',
+        logout: 'Выйти',
+        email: 'Email',
+        password: 'Пароль',
+        name: 'Имя',
+        firstName: 'Имя',
+        lastName: 'Фамилия',
+        middleName: 'Отчество',
+        forgotPassword: 'Забыли пароль?',
+        noAccount: 'Нет аккаунта?',
+        hasAccount: 'Уже есть аккаунт?',
+        signUp: 'Зарегистрироваться',
+        signIn: 'Войти',
+        passwordConfirmation: 'Подтверждение пароля',
+        loginSuccess: 'Вход выполнен успешно',
+        registerSuccess: 'Регистрация выполнена успешно',
+        logoutSuccess: 'Выход выполнен успешно',
+        loginRequired: 'Для доступа к этой странице необходимо войти в систему',
+        adminRequired: 'Для доступа к этой странице необходимы права администратора',
+        invalidCredentials: 'Неверный email или пароль',
+        rememberMe: 'Запомнить меня'
+    },
+    admin: {
+        dashboard: {
+            title: 'Панель управления',
+            welcome: 'Добро пожаловать в панель управления',
+            stats: {
+                events: 'Мероприятия',
+                users: 'Пользователи',
+                registrations: 'Регистрации',
+                reviews: 'Отзывы'
+            },
+            upcomingEvents: 'Ближайшие мероприятия',
+            pendingReviews: 'Отзывы на модерации',
+            viewAll: 'Смотреть все',
+            events: 'Мероприятия',
+            users: 'Пользователи',
+            reviews: 'Отзывы'
+        },
+        events: {
+            title: 'Управление мероприятиями',
+            add: 'Добавить мероприятие',
+            edit: 'Редактировать мероприятие',
+            deleteTitle: 'Удалить мероприятие?',
+            deleteConfirm: 'Вы уверены, что хотите удалить мероприятие "{title}"? Это действие нельзя отменить.',
+            table: {
+                id: 'ID',
+                title: 'Название',
+                type: 'Тип',
+                date: 'Дата',
+                location: 'Место',
+                price: 'Стоимость',
+                actions: 'Действия'
+            },
+            form: {
+                title: 'Название',
+                description: 'Описание',
+                location: 'Место проведения',
+                type: 'Тип мероприятия',
+                price: 'Стоимость (₽)',
+                priceHint: 'Оставьте пустым для бесплатного мероприятия',
+                capacity: 'Вместимость',
+                date: 'Дата проведения',
+                time: 'Время начала',
+                image: 'URL изображения',
+                imageHint: 'Оставьте пустым для автоматического выбора изображения'
+            },
+            validation: {
+                titleRequired: 'Название обязательно',
+                descriptionRequired: 'Описание обязательно',
+                locationRequired: 'Место проведения обязательно',
+                typeRequired: 'Тип мероприятия обязателен',
+                capacityRequired: 'Вместимость обязательна',
+                dateRequired: 'Дата проведения обязательна',
+                timeRequired: 'Время начала обязательно'
+            }
+        },
+        reviews: {
+            title: 'Модерация отзывов',
+            headers: {
+                id: 'ID',
+                user: 'Пользователь',
+                event: 'Мероприятие',
+                rating: 'Оценка',
+                status: 'Статус',
+                date: 'Дата',
+                actions: 'Действия'
+            },
+            close: 'Закрыть',
+            delete: {
+                title: 'Удаление отзыва',
+                message: 'Вы уверены, что хотите удалить этот отзыв? Это действие нельзя отменить.'
+            },
+            approve: 'Одобрить',
+            reject: 'Отклонить',
+            delete: 'Удалить',
+            deleteConfirm: {
+                title: 'Удаление отзыва',
+                message: 'Вы уверены, что хотите удалить этот отзыв? Это действие нельзя отменить.'
+            },
+            status: {
+                pending: 'На модерации',
+                approved: 'Одобрен',
+                rejected: 'Отклонен'
+            },
+            table: {
+                id: 'ID',
+                event: 'Мероприятие',
+                user: 'Пользователь',
+                rating: 'Оценка',
+                text: 'Текст',
+                status: 'Статус',
+                date: 'Дата',
+                actions: 'Действия'
+            },
+            close: 'Закрыть'
+        },
+        users: {
+            title: 'Управление пользователями',
+            table: {
+                id: 'ID',
+                name: 'Имя',
+                email: 'Email',
+                role: 'Роль',
+                registrations: 'Регистрации',
+                reviews: 'Отзывы',
+                joined: 'Дата регистрации',
+                actions: 'Действия'
+            }
+        }
+    },
+    common: {
+        save: 'Сохранить',
+        cancel: 'Отмена',
+        delete: 'Удалить',
+        edit: 'Редактировать',
+        view: 'Просмотр',
+        search: 'Поиск',
+        filter: 'Фильтр',
+        reset: 'Сбросить',
+        apply: 'Применить',
+        yes: 'Да',
+        no: 'Нет',
+        back: 'Назад',
+        next: 'Далее',
+        loading: 'Загрузка...',
+        noData: 'Нет данных',
+        all: 'Все'
+    },
     errors: {
-        pageNotFound: 'Страница не найдена'
+        notFound: {
+            title: 'Страница не найдена',
+            description: 'Запрашиваемая страница не существует или была перемещена',
+            action: 'Вернуться на главную'
+        },
+        pageNotFound: 'Страница не найдена',
+        serverError: {
+            title: 'Ошибка сервера',
+            description: 'Произошла ошибка при обработке запроса',
+            action: 'Попробовать снова'
+        },
+        validation: {
+            required: 'Поле обязательно для заполнения',
+            email: 'Введите корректный email',
+            minLength: 'Минимальная длина: {min} символов',
+            maxLength: 'Максимальная длина: {max} символов',
+            passwordMatch: 'Пароли не совпадают'
+        }
     }
-};
+}

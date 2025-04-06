@@ -81,15 +81,18 @@ class EventReviewService
      */
     public function create(EventReviewDTO $eventReviewDto): EventReview
     {
-        /** @var EventRegistration $eventRegistration */
+        // Сначала проверяем, зарегистрирован ли пользователь на мероприятие
         $eventRegistration = $this->eventRegistrationService->getAll(
             ['event'],
             new EventRegistrationFilter([
-                EventRegistrationFilter::EVENT_ID => $eventReviewDto->event_id,
-                EventRegistrationFilter::USER_ID => $eventReviewDto->user_id,
+                EventRegistrationFilter::EVENT_ID => $eventReviewDto->eventId,
+                EventRegistrationFilter::USER_ID => $eventReviewDto->userId,
             ])
-        )
-            ->firstOrFail();
+        )->first();
+
+        if ($eventRegistration === null) {
+            throw new RuntimeException('Вы не зарегистрированы на это мероприятие. Отзывы могут оставлять только зарегистрированные участники.', Response::HTTP_BAD_REQUEST);
+        }
 
         $event = $eventRegistration->event;
 
@@ -97,18 +100,18 @@ class EventReviewService
             throw new RuntimeException('Event not found', Response::HTTP_BAD_REQUEST);
         }
 
-        if ($event->start_date > date('Y-m-d') || ($event->start_date <= date('Y-m-d') && $event->start_time > date('H:i'))) {
-            throw new RuntimeException('loh', Response::HTTP_BAD_REQUEST);
+        if ($event->start_date > date('Y-m-d')) {
+            throw new RuntimeException('Нельзя оставить отзыв на мероприятие, которое еще не состоялось', Response::HTTP_BAD_REQUEST);
         }
 
         $existingReview = $this->getAll(filter: new EventReviewFilter([
-            EventReviewFilter::EVENT_ID => $eventReviewDto->event_id,
-            EventReviewFilter::USER_ID => $eventReviewDto->user_id,
+            EventReviewFilter::EVENT_ID => $eventReviewDto->eventId,
+            EventReviewFilter::USER_ID => $eventReviewDto->userId,
         ]))
             ->first();
 
-        if ($existingReview !== null) {
-            throw new RuntimeException('loh', Response::HTTP_BAD_REQUEST);
+        if ($existingReview !== null && $existingReview->status !== 'rejected') {
+            throw new RuntimeException('Вы уже оставили отзыв на это мероприятие', Response::HTTP_BAD_REQUEST);
         }
 
         /** @var EventReview $eventReview */
@@ -127,8 +130,8 @@ class EventReviewService
     {
         $eventReview = $this->findOrFail($eventReviewId);
 
-        if (!($status instanceof EventReviewStatus)) {
-            throw new RuntimeException('loh', Response::HTTP_BAD_REQUEST);
+        if (!in_array($status, EventReviewStatus::cases())) {
+            throw new RuntimeException('Неверный статус отзыва', Response::HTTP_BAD_REQUEST);
         }
 
         return $eventReview->update([

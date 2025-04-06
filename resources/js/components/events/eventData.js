@@ -37,7 +37,7 @@ export const eventTypeImages = {
     'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=800&q=80', // Воркшоп
     'https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=800&q=80', // Пикник
     'https://images.unsplash.com/photo-1540317580384-e5d43867caa6?auto=format&fit=crop&w=800&q=80', // Встреча
-    'https://images.unsplash.com/photo-1517457373958-b7f3bade9f55?auto=format&fit=crop&w=800&q=80', // Networking
+    'https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=800&q=80', // Networking
   ],
 };
 
@@ -50,18 +50,47 @@ export const eventTypeColors = {
   other: 'grey'
 };
 
+// Иконки для разных типов мероприятий
+export const eventTypeIcons = {
+  cultural: 'mdi-theater',
+  sports: 'mdi-soccer',
+  educational: 'mdi-school',
+  entertainment: 'mdi-party-popper',
+  other: 'mdi-calendar-blank'
+};
+
 // Функция для получения цвета типа мероприятия
 export const getEventTypeColor = (type) => {
   return eventTypeColors[type] || 'grey';
 };
 
+// Функция для получения иконки типа мероприятия
+export const getEventTypeIcon = (type) => {
+  return eventTypeIcons[type] || 'mdi-calendar-blank';
+};
+
+// Кеш для плейсхолдеров изображений событий
+const eventImageCache = {};
+
 // Функция для получения изображения мероприятия
 export const getEventImage = (event) => {
   if (event.image) return event.image;
   
+  // Если у события есть ID и для него уже есть кешированное изображение, возвращаем его
+  if (event.id && eventImageCache[event.id]) {
+    return eventImageCache[event.id];
+  }
+  
   const typeImages = eventTypeImages[event.type] || eventTypeImages.other;
   const randomIndex = Math.floor(Math.random() * typeImages.length);
-  return typeImages[randomIndex];
+  const placeholderImage = typeImages[randomIndex];
+  
+  // Кешируем изображение для этого ID события
+  if (event.id) {
+    eventImageCache[event.id] = placeholderImage;
+  }
+  
+  return placeholderImage;
 };
 
 // Функция для форматирования даты
@@ -87,4 +116,4 @@ export const formatTime = (time) => {
   // Обработка обычного времени в формате HH:MM
   const [hours, minutes] = time.split(':');
   return `${hours}:00`;
-}; 
+};

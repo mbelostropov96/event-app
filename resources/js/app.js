@@ -9,6 +9,7 @@ import 'vuetify/styles';
 import router from './router';
 import ru from './locales/ru';
 import App from './App.vue';
+import './axios-config'; // Import axios configuration
 
 const i18n = createI18n({
     legacy: false, // Используем Composition API

@@ -21,14 +21,23 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => 1,
-            'first_name' => 'admin',
-            'middle_name' => '',
-            'last_name' => '',
-            'email' => 'admin@admin.com',
-            'password' => Hash::make(12345678),
-            'role' => UserRole::ADMIN->value,
+            'first_name' => $this->faker->firstName(),
+            'middle_name' => $this->faker->optional(0.7, '')->firstName(),
+            'last_name' => $this->faker->lastName(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'password' => Hash::make('password'),
+            'role' => UserRole::USER->value,
             'remember_token' => Str::random(10),
         ];
+    }
+    
+    /**
+     * Configure the model factory to create an admin user.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::ADMIN->value,
+        ]);
     }
 }

@@ -3,16 +3,18 @@
 namespace App\Http\Controllers\User;
 
 use App\DTO\EventReviewDTO;
-use App\Http\Builder\Filters\EventRegistrationFilter;
+use App\Http\Builder\Filters\EventRegistrationFilter as EventRegistrationFilterBuilder;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreEventReviewRequest;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Contracts\View\View;
 use App\Services\EventRegistrationService;
 use App\Services\EventReviewService;
 use App\Services\EventService;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use App\Models\Event;
+use App\Models\EventReview;
+use App\Enums\EventReviewStatus;
+use Illuminate\Support\Facades\Log;
 
 class EventUserController extends Controller
 {
@@ -29,7 +31,44 @@ class EventUserController extends Controller
     public function showEvent(int $id): JsonResponse
     {
         $event = $this->eventService->findOrFail($id);
+        $event->load(['reviews.user']);
+        
+        // Проверяем, зарегистрирован ли текущий пользователь на это событие
+        $isRegistered = false;
+        
+        // Проверяем, может ли пользователь оставить отзыв
+        $canReview = false;
+        $isPastEvent = $event->start_date < date('Y-m-d');
+    
+        // Проверяем, аутентифицирован ли пользователь
+        // Используем optional() для безопасного доступа к user()
+        $user = optional(auth()->user());
 
+        if ($user && $user->id) {
+            $userId = $user->id;
+            
+            // Проверяем напрямую через запрос к базе данных
+            $registration = $this->eventRegistrationService->getAll(
+                filter: new EventRegistrationFilterBuilder([
+                    EventRegistrationFilterBuilder::EVENT_ID => $id,
+                    EventRegistrationFilterBuilder::USER_ID => $userId,
+                ])
+            )->first();
+            
+            $isRegistered = $registration !== null;
+            
+            // Проверяем, есть ли у пользователя отзыв на это событие
+            $existingReview = $event->reviews->where('user_id', $userId)->first();
+            // Пользователь может оставить отзыв, если:
+            // 1. Событие прошло
+            // 2. Пользователь зарегистрирован на событие
+            // 3. У пользователя нет отзыва или его отзыв был отклонен
+            $canReview = $isPastEvent && $isRegistered && (!$existingReview || $existingReview->status === 'rejected');
+        } else {
+            $canReview = false;
+            $isRegistered = false;
+        }
+        
         return response()->json([
             'id' => $event->id,
             'title' => $event->title,
@@ -43,6 +82,8 @@ class EventUserController extends Controller
             'capacity' => $event->capacity,
             'registered_count' => $event->registrations_count,
             'registration_available' => $event->isRegistrationAvailable(),
+            'registered' => $isRegistered,
+            'can_review' => $canReview,
             'organizer' => $event->organizer ? [
                 'id' => $event->organizer->id,
                 'name' => $event->organizer->name
@@ -76,8 +117,8 @@ class EventUserController extends Controller
      */
     public function indexEventRegistrations(): View
     {
-        $filter = new EventRegistrationFilter([
-            EventRegistrationFilter::USER_ID => auth()->user()->id,
+        $filter = new EventRegistrationFilterBuilder([
+            EventRegistrationFilterBuilder::USER_ID => auth()->user()->id,
         ]);
 
         $eventRegistrations = $this->eventRegistrationService->getAll(filter: $filter);
@@ -123,20 +164,45 @@ class EventUserController extends Controller
     }
 
     /**
-     * @param StoreEventReviewRequest $request
-     * @return View
+     * @param int $id
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function storeEventReview(StoreEventReviewRequest $request): View
+    public function storeEventReview(int $id, Request $request): JsonResponse
     {
-        $data = $request->validated();
+        // Validate the request manually
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'rating' => ['required', 'integer', 'min:1', 'max:5'],
+            'comment' => ['nullable', 'string'],
+        ]);
 
-        $eventReviewDto = new EventReviewDTO(array_merge($data, [
-            'user_id' => auth()->user()->id,
-        ]));
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
-        $result = $this->eventReviewService->create($eventReviewDto);
+        $eventReviewDto = new EventReviewDTO([
+            'eventId' => $id,
+            'userId' => auth()->user()->id,
+            'status' => 'pending',
+            'rating' => $request->rating,
+            'comment' => $request->comment,
+        ]);
 
-        return view('', compact('result'));
+        try {
+            $result = $this->eventReviewService->create($eventReviewDto);
+            
+            return response()->json([
+                'message' => 'Review submitted successfully',
+                'review' => $result
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 400);
+        }
     }
 
     /**
@@ -147,7 +213,12 @@ class EventUserController extends Controller
     {
         $query = Event::query();
 
-        // Filter by date range
+        // По умолчанию скрываем прошедшие события, если не указан параметр show_past_events
+        $showPastEvents = $request->boolean('show_past_events', false);
+        if (!$showPastEvents) {
+            $query->where('start_date', '>=', now()->startOfDay());
+        }
+
         if ($request->has('from_date')) {
             $query->where('start_date', '>=', $request->from_date);
         }
@@ -155,12 +226,10 @@ class EventUserController extends Controller
             $query->where('start_date', '<=', $request->to_date);
         }
 
-        // Filter by type
         if ($request->has('type')) {
             $query->where('type', $request->type);
         }
 
-        // Filter by price
         if ($request->has('price_min')) {
             $query->where('price', '>=', $request->price_min);
         }
@@ -168,7 +237,6 @@ class EventUserController extends Controller
             $query->where('price', '<=', $request->price_max);
         }
         
-        // Handle price_range parameter if it exists
         if ($request->has('price_range') && !$request->has('price_min') && !$request->has('price_max')) {
             if ($request->price_range === 'free') {
                 $query->where(function($q) {
@@ -216,5 +284,87 @@ class EventUserController extends Controller
         $events = $query->paginate($perPage);
 
         return response()->json($events);
+    }
+
+    /**
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function getEventReviews(int $id): JsonResponse
+    {
+        $event = $this->eventService->findOrFail($id);
+        
+        $reviews = EventReview::with(['user'])
+            ->where('event_id', $id)
+            ->where('status', EventReviewStatus::APPROVED->value)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+            
+        $formattedReviews = $reviews->map(function ($review) {
+            return [
+                'id' => $review->id,
+                'user' => [
+                    'id' => $review->user->id,
+                    'first_name' => $review->user->first_name,
+                    'last_name' => $review->user->last_name,
+                ],
+                'rating' => $review->rating,
+                'comment' => $review->comment,
+                'created_at' => $review->created_at->format('Y-m-d H:i:s'),
+            ];
+        });
+            
+        return response()->json([
+            'data' => $formattedReviews,
+            'meta' => [
+                'current_page' => $reviews->currentPage(),
+                'last_page' => $reviews->lastPage(),
+                'per_page' => $reviews->perPage(),
+                'total' => $reviews->total()
+            ]
+        ]);
+    }
+
+    /**
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function getEvent(int $id): JsonResponse
+    {
+        $event = $this->eventService->findOrFail($id);
+        $event->load(['reviews.user']);
+
+        // Проверяем, может ли пользователь оставить отзыв
+        $canReview = false;
+        $isPastEvent = $event->start_date < date('Y-m-d');
+        $isRegistered = false;
+        
+        // Используем optional() для безопасного доступа к user()
+        $user = optional(auth()->user());
+        if ($user && $user->id) {
+            $userId = $user->id;
+            // Проверяем напрямую через запрос к базе данных
+            $registration = $this->eventRegistrationService->getAll(
+                filter: new EventRegistrationFilterBuilder([
+                    EventRegistrationFilterBuilder::EVENT_ID => $id,
+                    EventRegistrationFilterBuilder::USER_ID => $userId,
+                ])
+            )->first();
+            
+            $isRegistered = $registration !== null;
+            
+            // Проверяем, есть ли у пользователя отзыв на это событие
+            $existingReview = $event->reviews->where('user_id', $userId)->first();
+            // Пользователь может оставить отзыв, если:
+            // 1. Событие прошло
+            // 2. Пользователь зарегистрирован на событие
+            // 3. У пользователя нет отзыва или его отзыв был отклонен
+            $canReview = $isPastEvent && $isRegistered && (!$existingReview || $existingReview->status === 'rejected');
+        }
+
+        return response()->json(array_merge($event->toArray(), [
+            'can_review' => $canReview,
+            'registered' => $isRegistered
+        ]));
     }
 }

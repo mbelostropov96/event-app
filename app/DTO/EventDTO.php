@@ -10,9 +10,10 @@ class EventDTO extends AbstractDTO
     public readonly string $title;
     public readonly string $description;
     public readonly string $location;
-    public readonly string $date;
+    public readonly string $startDate;
     public readonly string $startTime;
     public readonly int $price;
+    public readonly ?string $image;
 
     public function __construct(array $data)
     {

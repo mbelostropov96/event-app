@@ -6,6 +6,7 @@ use App\Models\Traits\Filterable;
 use App\Models\Traits\Sortable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -21,6 +22,9 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $remember_token
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * 
+ * @property Collection<EventRegistration> $eventRegistrations
+ * @property Collection<EventReview> $reviews
  */
 class User extends Authenticatable
 {
@@ -63,4 +67,30 @@ class User extends Authenticatable
         'created_at' => 'date',
         'updated_at' => 'date',
     ];
+    
+    /**
+     * Get the user's full name
+     * 
+     * @return string
+     */
+    public function getFullNameAttribute(): string
+    {
+        return "{$this->first_name} {$this->middle_name} {$this->last_name}";
+    }
+    
+    /**
+     * Get the user's event registrations
+     */
+    public function eventRegistrations(): HasMany
+    {
+        return $this->hasMany(EventRegistration::class);
+    }
+    
+    /**
+     * Get the user's event reviews
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(EventReview::class);
+    }
 }

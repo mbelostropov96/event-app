@@ -84,8 +84,19 @@ class EventRegistrationService
 
         $event = $this->eventService->findOrFail($eventId);
 
-        if ($event->start_date > date('Y-m-d', time())) {
-            throw new RuntimeException('loh', Response::HTTP_BAD_REQUEST);
+        // Check if the user is already registered for this event
+        $existingRegistration = (new EventRegistration())->newQuery()
+            ->where('event_id', $eventId)
+            ->where('user_id', $userId)
+            ->first();
+
+        if ($existingRegistration) {
+            throw new RuntimeException('You are already registered for this event', Response::HTTP_BAD_REQUEST);
+        }
+
+        // Проверяем, что событие не прошло (вместо проверки, что оно уже началось)
+        if ($event->start_date < date('Y-m-d', time())) {
+            throw new RuntimeException('Registration for this event is closed because it has already passed', Response::HTTP_BAD_REQUEST);
         }
 
         /** @var EventRegistration $eventUser */
@@ -117,16 +128,22 @@ class EventRegistrationService
 
         /** @var EventRegistration $eventRegistration */
         $eventRegistration = $this->getAll(['event'], $filter)
-            ->firstOrFail();
+            ->first();
+
+        if (!$eventRegistration) {
+            throw new RuntimeException('You are not registered for this event', Response::HTTP_BAD_REQUEST);
+        }
 
         if ($eventRegistration->event === null) {
-            throw new RuntimeException('loh', Response::HTTP_BAD_REQUEST);
+            throw new RuntimeException('Event not found', Response::HTTP_BAD_REQUEST);
         }
 
-        if ($eventRegistration->event->start_date > date('Y-m-d', time())) {
-            throw new RuntimeException('loh', Response::HTTP_BAD_REQUEST);
+        // Проверяем, что событие не прошло (вместо проверки, что оно уже началось)
+        if ($eventRegistration->event->start_date < date('Y-m-d', time())) {
+            throw new RuntimeException('Cannot unregister from an event that has already passed', Response::HTTP_BAD_REQUEST);
         }
 
-        return (bool)$eventRegistration;
+        // Удаляем регистрацию
+        return (bool)$eventRegistration->delete();
     }
 }

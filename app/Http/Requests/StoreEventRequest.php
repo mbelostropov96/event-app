@@ -17,9 +17,12 @@ class StoreEventRequest extends AbstractRequest
             'title' => ['required', 'string', 'max:255',],
             'description' => ['nullable', 'string',],
             'location' => ['required', 'string', 'max:255',],
-            'date' => ['required', 'date_format:Y-m-d',],
+            'start_date' => ['required', 'date_format:Y-m-d',],
             'start_time' => ['required', 'date_format:H:i',],
             'price' => ['nullable', 'integer',],
+            'type' => ['required', 'string'],
+            'capacity' => ['required', 'integer', 'min:1'],
+            'image' => ['nullable', 'string'],
         ];
     }
 }
