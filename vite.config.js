@@ -31,8 +31,9 @@ export default defineConfig({
             origin: '*'
         },
         hmr: {
-            host: 'localhost',
-            protocol: 'ws'
+            host: process.env.VITE_HMR_HOST || 'localhost',
+            protocol: process.env.VITE_HMR_PROTOCOL || 'ws',
+            clientPort: process.env.VITE_HMR_PORT || null,
         },
         watch: {
             usePolling: true

@@ -13,7 +13,9 @@
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css" rel="stylesheet">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Vite Assets -->
+    <link rel="stylesheet" href="{{ asset('build/assets/app-BmOgUYqQ.css') }}">
+    <script type="module" src="{{ asset('build/assets/app-C74Z0R7i.js') }}"></script>
 </head>
 <body>
     <div id="app"></div>
