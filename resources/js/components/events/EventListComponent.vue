@@ -107,10 +107,10 @@
     </v-card>
 
     <!-- Events List -->
-    <v-row v-if="!loading">
+    <v-row v-if="!loading && events.length > 0">
       <v-col cols="12">
         <v-card class="pa-4">
-          <v-row v-if="events.length">
+          <v-row>
             <v-col
               v-for="event in events"
               :key="event.id"
@@ -225,12 +225,8 @@
             </v-col>
           </v-row>
 
-          <div v-else class="text-center py-4">
-            {{ t('events.noEvents') }}
-          </div>
-
           <!-- Pagination -->
-          <div v-if="events.length" class="d-flex justify-center mt-4">
+          <div class="d-flex justify-center mt-4">
             <v-pagination
               v-model="currentPage"
               :length="totalPages"

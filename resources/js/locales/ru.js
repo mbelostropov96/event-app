@@ -181,34 +181,44 @@ export default {
         title: 'События в Балаково',
         details: 'Подробнее',
         free: 'Бесплатно',
-        filters: {
-            type: 'Категория',
-            price: 'Стоимость',
-            fromDate: 'Дата с',
-            toDate: 'Дата по',
-            dateHint: 'Выберите дату',
-            apply: 'Применить фильтры',
-            clear: 'Сбросить',
-            showPastEvents: 'Показать прошедшие события',
-            priceRanges: {
-                free: 'Бесплатно',
-            }
-        },
-        sorting: {
-            field: 'Сортировать по',
-            asc: 'По возрастанию',
-            desc: 'По убыванию',
-            fields: {
-              title: 'По названию',
-              date: 'Дате',
-              price: 'Стоимости',
-              type: 'По типу'
-            }
-        },
         description: 'Описание',
         organizer: 'Организатор',
         organizerUnknown: 'Организатор не указан',
         pricePerPerson: 'Стоимость за человека',
+        filters: {
+            type: 'Категория',
+            price: 'Стоимость',
+            fromDate: 'С даты',
+            toDate: 'По дату',
+            dateHint: 'Формат: ГГГГ-ММ-ДД',
+            showPastEvents: 'Показать прошедшие события',
+            apply: 'Применить',
+            clear: 'Очистить',
+            priceRanges: {
+                free: 'Бесплатно'
+            }
+        },
+        sorting: {
+            field: 'Сортировка',
+            date_asc: 'Дата (сначала ранние)',
+            date_desc: 'Дата (сначала поздние)',
+            price_asc: 'Цена (по возрастанию)',
+            price_desc: 'Цена (по убыванию)',
+            title_asc: 'Название (А-Я)',
+            title_desc: 'Название (Я-А)',
+            asc: 'По возрастанию',
+            desc: 'По убыванию',
+            fields: {
+                title: 'По названию',
+                date: 'Дате',
+                price: 'Стоимости',
+                type: 'По типу'
+            }
+        },
+        noEvents: 'Нет мероприятий',
+        noEventsFound: 'Мероприятия не найдены',
+        pastEvent: 'Прошедшее',
+        locationNotSpecified: 'Место не указано',
         showOnMap: 'Показать на карте',
         free: 'Бесплатно',
         register: 'Зарегистрироваться',
@@ -219,7 +229,6 @@ export default {
         unregister: 'Отменить регистрацию',
         unregister_confirm: 'Вы уверены, что хотите отменить регистрацию на это мероприятие?',
         unregistration_error: 'Произошла ошибка при отмене регистрации',
-        pastEvent: 'Прошедшее событие',
         actions: {
             addToCalendar: 'Добавить в календарь',
             share: 'Поделиться',

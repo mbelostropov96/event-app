@@ -9,19 +9,28 @@
         <v-row>
           <v-col cols="12" md="4">
             <v-card variant="outlined" class="text-center pa-4">
-              <div class="text-h3 mb-2">{{ stats.events }}</div>
+              <div class="text-h3 mb-2">
+                <v-progress-circular v-if="loading" indeterminate color="primary" class="mb-1"></v-progress-circular>
+                <span v-else>{{ stats.events }}</span>
+              </div>
               <div class="text-subtitle-1">Мероприятий</div>
             </v-card>
           </v-col>
           <v-col cols="12" md="4">
             <v-card variant="outlined" class="text-center pa-4">
-              <div class="text-h3 mb-2">{{ stats.users }}</div>
+              <div class="text-h3 mb-2">
+                <v-progress-circular v-if="loading" indeterminate color="primary" class="mb-1"></v-progress-circular>
+                <span v-else>{{ stats.users }}</span>
+              </div>
               <div class="text-subtitle-1">Пользователей</div>
             </v-card>
           </v-col>
           <v-col cols="12" md="4">
             <v-card variant="outlined" class="text-center pa-4">
-              <div class="text-h3 mb-2">{{ stats.reviews }}</div>
+              <div class="text-h3 mb-2">
+                <v-progress-circular v-if="loading" indeterminate color="primary" class="mb-1"></v-progress-circular>
+                <span v-else>{{ stats.reviews }}</span>
+              </div>
               <div class="text-subtitle-1">Отзывов</div>
             </v-card>
           </v-col>
@@ -29,13 +38,17 @@
       </v-card-text>
     </v-card>
 
-    <v-card v-if="pendingReviews.length > 0" class="mb-6">
+    <v-card v-if="pendingReviews.length > 0 || loading" class="mb-6">
       <v-card-title class="text-h5">
         <v-icon icon="mdi-star-outline" class="mr-2"></v-icon>
         Отзывы, ожидающие модерации
       </v-card-title>
       <v-card-text>
-        <v-list>
+        <div v-if="loading" class="text-center py-4">
+          <v-progress-circular indeterminate color="primary" class="mb-2"></v-progress-circular>
+          <p class="text-body-1">Загрузка отзывов...</p>
+        </div>
+        <v-list v-else>
           <v-list-item
             v-for="review in pendingReviews"
             :key="review.id"
@@ -90,6 +103,10 @@
             </template>
           </v-list-item>
         </v-list>
+        <div v-else-if="loading" class="text-center py-4">
+          <v-progress-circular indeterminate color="primary" class="mb-2"></v-progress-circular>
+          <p class="text-body-1">Загрузка мероприятий...</p>
+        </div>
         <div v-else class="text-center py-4">
           <p class="text-body-1">Нет предстоящих мероприятий</p>
         </div>
@@ -102,6 +119,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
+const loading = ref(true);
 const stats = ref({
   events: 0,
   users: 0,
@@ -112,6 +130,7 @@ const pendingReviews = ref([]);
 const upcomingEvents = ref([]);
 
 const fetchDashboardData = async () => {
+  loading.value = true;
   try {
     const [statsResponse, reviewsResponse, eventsResponse] = await Promise.all([
       axios.get('/api/admin/stats'),
@@ -130,6 +149,8 @@ const fetchDashboardData = async () => {
       users: '...',
       reviews: '...'
     };
+  } finally {
+    loading.value = false;
   }
 };
 

@@ -14,8 +14,7 @@
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css" rel="stylesheet">
 
     <!-- Vite Assets -->
-    <link rel="stylesheet" href="{{ asset('build/assets/app-BmOgUYqQ.css') }}">
-    <script type="module" src="{{ asset('build/assets/app-C74Z0R7i.js') }}"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <div id="app"></div>
