@@ -201,20 +201,12 @@
                   <v-card-title class="text-truncate pa-0 text-subtitle-1 font-weight-bold">
                     {{ event.title }}
                   </v-card-title>
-                  
-                  <v-card-subtitle class="pa-0 pt-2 pb-1">
-                    <div class="d-flex align-center">
-                      <v-icon size="small" icon="mdi-calendar" class="mr-1"></v-icon>
-                      <span class="text-body-2">{{ formatDate(event.start_date) }}</span>
-                      <v-divider vertical class="mx-2"></v-divider>
-                      <v-icon size="small" icon="mdi-clock" class="mr-1"></v-icon>
-                      <span class="text-body-2">{{ formatTime(event.start_time) }}</span>
-                    </div>
-                    
-                    <div class="d-flex align-center mt-1">
-                      <v-icon size="small" icon="mdi-map-marker" class="mr-1"></v-icon>
-                      <span class="text-body-2 text-truncate">{{ formatLocation(event.location) }}</span>
-                    </div>
+                  <v-card-subtitle class="pt-1 pb-0 text-grey-darken-1 text-caption">
+                    {{ formatDate(event.start_date) }} — {{ formatLocation(event.location) }}
+                  </v-card-subtitle>
+                  <v-card-subtitle class="pt-0 pb-1 text-caption">
+                    <v-icon size="18" icon="mdi-currency-rub" class="mr-1 align-middle"/>
+                    <span class="event-price">{{ event.price ? formatPrice(event.price) : t('events.free') }}</span>
                   </v-card-subtitle>
                 </v-card-item>
 

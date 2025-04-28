@@ -15,6 +15,8 @@ import AdminDashboard from './components/admin/AdminDashboard.vue';
 import AdminEvents from './components/admin/AdminEvents.vue';
 import AdminReviews from './components/admin/AdminReviews.vue';
 import AdminUsers from './components/admin/AdminUsers.vue';
+import AdminDashboardHome from './components/admin/AdminDashboardHome.vue';
+import ProcessesComponent from './components/documentation/ProcessesComponent.vue';
 
 const routes = [
     {
@@ -65,6 +67,12 @@ const routes = [
         component: AboutComponent
     },
     {
+        path: '/processes',
+        name: 'processes',
+        component: ProcessesComponent,
+        meta: { standalone: true }
+    },
+    {
         path: '/login',
         name: 'login',
         component: LoginComponent,
@@ -84,7 +92,7 @@ const routes = [
             {
                 path: '',
                 name: 'admin-dashboard',
-                component: () => import('./components/admin/AdminDashboardHome.vue'),
+                component: AdminDashboardHome,
                 meta: { requiresAuth: true, requiresAdmin: true }
             },
             {

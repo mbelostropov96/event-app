@@ -246,33 +246,35 @@
   
         <!-- Action Card -->
         <v-col cols="12" md="4">
-          <v-card class="sticky-top" style="top: 24px">
-            <v-card-text>
-              <v-btn
-                block
-                color="primary"
-                size="large"
-                :loading="loading"
-                :disabled="!isAuthenticated"
-                v-if="!event.registered"
-                @click="register"
-              >
-                <v-icon start icon="mdi-check-circle"></v-icon>
-                {{ t('events.register') }}
-              </v-btn>
-              <v-btn
-                block
-                color="error"
-                size="large"
-                :loading="loading"
-                v-else
-                @click="unregister"
-              >
-                <v-icon start icon="mdi-close-circle"></v-icon>
-                {{ t('events.unregister') }}
-              </v-btn>
-            </v-card-text>
-          </v-card>
+          <div class="register-btn-wrap">
+            <v-btn
+              block
+              color="primary"
+              size="x-large"
+              elevation="8"
+              class="register-btn mb-4"
+              :loading="loading"
+              :disabled="!isAuthenticated"
+              v-if="!event.registered"
+              @click="register"
+            >
+              <v-icon start icon="mdi-check-circle"></v-icon>
+              <span class="text-subtitle-1">{{ t('events.register') }}</span>
+            </v-btn>
+            <v-btn
+              block
+              color="error"
+              size="x-large"
+              elevation="8"
+              class="register-btn mb-4"
+              :loading="loading"
+              v-else
+              @click="unregister"
+            >
+              <v-icon start icon="mdi-close-circle"></v-icon>
+              <span class="text-subtitle-1">{{ t('events.unregister') }}</span>
+            </v-btn>
+          </div>
         </v-col>
       </v-row>
     </v-container>
@@ -387,14 +389,12 @@
 
         <!-- Action Card -->
         <v-col cols="12" md="4">
-          <v-card class="sticky-top" style="top: 24px">
-            <v-card-text>
-              <v-skeleton-loader
-                type="button"
-                class="mb-4"
-              ></v-skeleton-loader>
-            </v-card-text>
-          </v-card>
+          <div class="register-btn-wrap">
+            <v-skeleton-loader
+              type="button"
+              class="mb-4"
+            ></v-skeleton-loader>
+          </div>
         </v-col>
       </v-row>
     </v-container>
@@ -677,8 +677,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.sticky-top {
-  position: sticky;
-  top: 24px;
+.register-btn-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: 32px;
+}
+.register-btn {
+  font-size: 1.5rem;
+  padding: 24px 0;
+  border-radius: 16px;
+  font-weight: bold;
+  box-shadow: 0 4px 16px rgba(60,60,60,0.10);
 }
 </style>

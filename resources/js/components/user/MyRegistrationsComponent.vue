@@ -132,7 +132,6 @@
                 <v-card-item>
                   <v-card-title class="d-flex align-center">
                     {{ registration.event.title }}
-                    <v-chip size="small" color="grey" class="ml-2">{{ t('events.past') }}</v-chip>
                   </v-card-title>
                   <v-card-subtitle>
                     <v-icon icon="mdi-calendar" size="small" class="mr-1"></v-icon>
