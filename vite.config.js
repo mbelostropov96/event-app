@@ -23,20 +23,24 @@ export default defineConfig({
             vue: 'vue/dist/vue.esm-bundler.js',
         },
     },
+    build: {
+        // Ensure manifest is generated
+        manifest: true,
+    },
     server: {
-        host: '0.0.0.0',
-        port: 5173,
-        strictPort: true,
-        cors: {
-            origin: '*'
+        // Add proper CORS headers for ngrok
+        cors: true,
+        // Ensure correct MIME types are used
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
+            'Access-Control-Allow-Headers': 'Content-Type',
         },
+        // Handle HTTPS properly
+        https: true,
         hmr: {
-            host: process.env.VITE_HMR_HOST || 'localhost',
-            protocol: process.env.VITE_HMR_PROTOCOL || 'ws',
-            clientPort: process.env.VITE_HMR_PORT || null,
+            // Make HMR work with ngrok
+            host: 'localhost',
         },
-        watch: {
-            usePolling: true
-        }
     },
 });

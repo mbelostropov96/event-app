@@ -17,6 +17,7 @@ import AdminReviews from './components/admin/AdminReviews.vue';
 import AdminUsers from './components/admin/AdminUsers.vue';
 import AdminDashboardHome from './components/admin/AdminDashboardHome.vue';
 import ProcessesComponent from './components/documentation/ProcessesComponent.vue';
+import DatabaseComponent from './components/documentation/DatabaseComponent.vue';
 
 const routes = [
     {
@@ -70,6 +71,12 @@ const routes = [
         path: '/processes',
         name: 'processes',
         component: ProcessesComponent,
+        meta: { standalone: true }
+    },
+    {
+        path: '/db',
+        name: 'database',
+        component: DatabaseComponent,
         meta: { standalone: true }
     },
     {
@@ -134,7 +141,6 @@ const router = createRouter({
     }
 });
 
-// Navigation guards
 router.beforeEach((to, from, next) => {
     const token = localStorage.getItem('token');
     const isAuthenticated = !!token;
@@ -146,14 +152,10 @@ router.beforeEach((to, from, next) => {
             return;
         }
         
-        // Check if the route requires admin role
         if (to.matched.some(record => record.meta.requiresAdmin)) {
-            // We'll check the admin status in the component itself
-            // since we need to make an API call to get the user role
         }
     }
-    
-    // If the route is for guests only (login, register) and user is authenticated
+
     if (to.matched.some(record => record.meta.guest) && isAuthenticated) {
         next({ name: 'home' });
         return;

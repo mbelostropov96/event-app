@@ -7,7 +7,80 @@
       </v-col>
     </v-row>
 
-    <!-- Процесс 1: Регистрация на событие -->
+    <!-- Процесс 1: Подключение к базе данных -->
+    <v-row>
+      <v-col cols="12">
+        <v-card class="mb-8">
+          <v-card-title class="text-h5 bg-primary text-white">
+            <v-icon start icon="mdi-database" class="mr-2"></v-icon>
+            Процесс подключения к базе данных
+          </v-card-title>
+          <v-card-text class="pt-4">
+            <p class="text-body-1 mb-4">
+              Подключение к базе данных настраивается через конфигурационный файл и использует драйвер MySQL.
+            </p>
+            
+            <h3 class="text-h6 mt-4 mb-2">Конфигурация базы данных (.env)</h3>
+            <v-sheet color="grey-lighten-4" class="pa-4 mb-4 rounded code-block">
+              <pre><code>
+DB_CONNECTION=mysql
+DB_HOST=event-app-db
+DB_PORT=3306
+DB_DATABASE=event_app
+DB_USERNAME=event_app_user
+DB_PASSWORD=password
+              </code></pre>
+            </v-sheet>
+
+            <h3 class="text-h6 mt-4 mb-2">Настройка подключения (config/database.php)</h3>
+            <v-sheet color="grey-lighten-4" class="pa-4 mb-4 rounded code-block">
+              <pre><code>
+'mysql' => [
+    'driver' => 'mysql',
+    'url' => env('DATABASE_URL'),
+    'host' => env('DB_HOST', '127.0.0.1'),
+    'port' => env('DB_PORT', '3306'),
+    'database' => env('DB_DATABASE', 'forge'),
+    'username' => env('DB_USERNAME', 'forge'),
+    'password' => env('DB_PASSWORD', ''),
+    'unix_socket' => env('DB_SOCKET', ''),
+    'charset' => 'utf8mb4',
+    'collation' => 'utf8mb4_unicode_ci',
+    'prefix' => '',
+    'prefix_indexes' => true,
+    'strict' => true,
+    'engine' => null,
+    'options' => extension_loaded('pdo_mysql') ? array_filter([
+        PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+    ]) : [],
+],
+              </code></pre>
+            </v-sheet>
+
+            <h3 class="text-h6 mt-4 mb-2">Инициализация подключения (AppServiceProvider.php)</h3>
+            <v-sheet color="grey-lighten-4" class="pa-4 mb-4 rounded code-block">
+              <pre><code>
+/**
+ * Bootstrap any application services.
+ */
+public function boot()
+{
+    // Проверка соединения с базой данных
+    try {
+        DB::connection()->getPdo();
+        Log::info('База данных подключена успешно: ' . DB::connection()->getDatabaseName());
+    } catch (\Exception $e) {
+        Log::error('Ошибка подключения к базе данных: ' . $e->getMessage());
+    }
+}
+              </code></pre>
+            </v-sheet>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Процесс 2: Регистрация на событие -->
     <v-row>
       <v-col cols="12">
         <v-card class="mb-8">
@@ -115,7 +188,7 @@ Route::middleware('auth:sanctum')->group(function () {
       </v-col>
     </v-row>
 
-    <!-- Процесс 2: Модерация отзывов -->
+    <!-- Процесс 3: Модерация отзывов -->
     <v-row>
       <v-col cols="12">
         <v-card class="mb-8">
@@ -258,7 +331,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
       </v-col>
     </v-row>
 
-    <!-- Процесс 3: Управление плейсхолдерами изображений -->
+    <!-- Процесс 4: Управление плейсхолдерами изображений -->
     <v-row>
       <v-col cols="12">
         <v-card class="mb-8">
@@ -504,7 +577,7 @@ public function handle($request, Closure $next)
       </v-col>
     </v-row>
 
-    <!-- Процесс 5: Обработка опциональной аутентификации -->
+    <!-- Процесс 6: Обработка опциональной аутентификации -->
     <v-row>
       <v-col cols="12">
         <v-card class="mb-8">

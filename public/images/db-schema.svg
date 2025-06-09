@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .table {
+      fill: #f5f5f5;
+      stroke: #3f51b5;
+      stroke-width: 2;
+    }
+    .table-header {
+      fill: #3f51b5;
+    }
+    .table-title {
+      fill: white;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .field {
+      fill: black;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+    }
+    .primary-key {
+      font-weight: bold;
+    }
+    .foreign-key {
+      fill: #3f51b5;
+      font-style: italic;
+    }
+    .relation {
+      stroke: #3f51b5;
+      stroke-width: 2;
+      fill: none;
+      marker-end: url(#arrowhead);
+    }
+    .relation-text {
+      fill: #3f51b5;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      font-style: italic;
+    }
+  </style>
+  
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3f51b5" />
+    </marker>
+  </defs>
+  
+  <g transform="translate(50, 50)">
+    <rect class="table" width="200" height="180" rx="5" ry="5" />
+    <rect class="table-header" width="200" height="30" rx="5" ry="5" />
+    <text class="table-title" x="100" y="20" text-anchor="middle">Users</text>
+    <text class="field primary-key" x="10" y="50">id</text>
+    <text class="field" x="10" y="70">name</text>
+    <text class="field" x="10" y="90">email</text>
+    <text class="field" x="10" y="110">password</text>
+    <text class="field" x="10" y="130">role</text>
+    <text class="field" x="10" y="150">remember_token</text>
+    <text class="field" x="10" y="170">timestamps</text>
+  </g>
+  
+  <g transform="translate(550, 50)">
+    <rect class="table" width="200" height="200" rx="5" ry="5" />
+    <rect class="table-header" width="200" height="30" rx="5" ry="5" />
+    <text class="table-title" x="100" y="20" text-anchor="middle">Events</text>
+    <text class="field primary-key" x="10" y="50">id</text>
+    <text class="field" x="10" y="70">title</text>
+    <text class="field" x="10" y="90">description</text>
+    <text class="field" x="10" y="110">date</text>
+    <text class="field" x="10" y="130">location</text>
+    <text class="field" x="10" y="150">max_participants</text>
+    <text class="field" x="10" y="170">image</text>
+    <text class="field" x="10" y="190">timestamps</text>
+  </g>
+  
+  <g transform="translate(50, 350)">
+    <rect class="table" width="200" height="140" rx="5" ry="5" />
+    <rect class="table-header" width="200" height="30" rx="5" ry="5" />
+    <text class="table-title" x="100" y="20" text-anchor="middle">Event Registrations</text>
+    <text class="field primary-key" x="10" y="50">id</text>
+    <text class="field foreign-key" x="10" y="70">user_id</text>
+    <text class="field foreign-key" x="10" y="90">event_id</text>
+    <text class="field" x="10" y="110">registered_at</text>
+    <text class="field" x="10" y="130">timestamps</text>
+  </g>
+  
+  <g transform="translate(550, 350)">
+    <rect class="table" width="200" height="180" rx="5" ry="5" />
+    <rect class="table-header" width="200" height="30" rx="5" ry="5" />
+    <text class="table-title" x="100" y="20" text-anchor="middle">Event Reviews</text>
+    <text class="field primary-key" x="10" y="50">id</text>
+    <text class="field foreign-key" x="10" y="70">user_id</text>
+    <text class="field foreign-key" x="10" y="90">event_id</text>
+    <text class="field" x="10" y="110">rating</text>
+    <text class="field" x="10" y="130">comment</text>
+    <text class="field" x="10" y="150">status</text>
+    <text class="field" x="10" y="170">timestamps</text>
+  </g>
+  
+  <path class="relation" d="M150,230 L150,350" />
+  <text class="relation-text" x="160" y="290" text-anchor="start">1:n</text>
+  
+  <path class="relation" d="M250,140 C400,140 400,390 550,390" />
+  <text class="relation-text" x="400" y="120" text-anchor="middle">1:n</text>
+  
+  <path class="relation" d="M550,140 C400,140 400,390 250,390" />
+  <text class="relation-text" x="400" y="160" text-anchor="middle">1:n</text>
+  
+  <path class="relation" d="M650,250 L650,350" />
+  <text class="relation-text" x="660" y="290" text-anchor="start">1:n</text>
+</svg>
